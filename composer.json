@@ -7,10 +7,10 @@
     "require": {
         "php": ">=5.3.0",
         "symfony/framework-bundle": ">=2.1",
-		"symfony/form": ">=2.1"
+        "symfony/form": ">=2.1"
     },
     "autoload": {
-        "psr-0": { "Ibrows\\SimpleSearchBundle": "" }
+        "psr-0": { "Ibrows\\SimpleSearchBundle\\": "" }
     },
     "target-dir": "Ibrows/MediaBundle"
 }
