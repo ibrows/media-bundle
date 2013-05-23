@@ -10,7 +10,7 @@
         "symfony/form": ">=2.1"
     },
     "autoload": {
-        "psr-0": { "Ibrows\\SimpleSearchBundle\\": "" }
+        "psr-0": { "Ibrows\\MediaBundle\\": "" }
     },
     "target-dir": "Ibrows/MediaBundle"
 }
