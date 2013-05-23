@@ -1,0 +1,52 @@
+<?xml version="1.0" ?>
+
+<container xmlns="http://symfony.com/schema/dic/services"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <services>
+        <service id="ibrows_media.type.manager" class="Ibrows\MediaBundle\Manager\MediaTypeManager">
+            <argument>%ibrows_media.enabled_types%</argument>
+        </service>
+        
+        <service id="ibrows_media.form.subscriber" class="Ibrows\MediaBundle\Form\Subscriber\MediaTypeGuessSubscriber">
+            <argument type="service" id="ibrows_media.type.manager" />
+            <argument type="service" id="translator" />
+        </service>
+        
+        <service id="ibrows_media.event.subscriber" class="Ibrows\MediaBundle\Doctrine\Subscriber\MediaTypeSubscriber">
+            <tag name="doctrine.event_subscriber" />
+            <argument type="service" id="ibrows_media.type.manager" />
+        </service>
+        
+        <service id="ibrows_media.form.type.link" class="Ibrows\MediaBundle\Form\Type\MediaLinkFormType">
+            <tag name="form.type" alias="ibrows_media_link" />
+            <argument type="service" id="ibrows_media.form.subscriber" />
+        </service>
+        
+        <service id="ibrows_media.form.type.upload" class="Ibrows\MediaBundle\Form\Type\MediaUploadFormType">
+            <tag name="form.type" alias="ibrows_media_upload" />
+            <argument type="service" id="ibrows_media.form.subscriber" />
+        </service>
+        
+        <service id="ibrows_media.type.image" class="Ibrows\MediaBundle\Type\UploadedImageType">
+            <tag name="ibrows_media.type" alias="ibrows_media_uploadedimage" />
+            <argument>%ibrows_media.upload_dir%</argument>
+            <argument>%ibrows_media.uri_prefix%</argument>
+            <argument>%ibrows_media.uploadedimage.max_width%</argument>
+            <argument>%ibrows_media.uploadedimage.max_height%</argument>
+            <argument>%ibrows_media.uploadedimage.formats%</argument>
+            <call method="setContainer">
+		        <argument type="service" id="service_container" />
+		    </call>
+        </service>
+        
+        <service id="ibrows_media.type.youtube" class="Ibrows\MediaBundle\Type\YoutubeType">
+            <tag name="ibrows_media.type" alias="ibrows_media_youtube" />
+        </service>
+        
+        <service id="ibrows_media.type.soundcloud" class="Ibrows\MediaBundle\Type\SoundcloudType">
+            <tag name="ibrows_media.type" alias="ibrows_media_soundcloud" />
+        </service>
+    </services>
+</container>

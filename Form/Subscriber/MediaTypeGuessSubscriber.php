@@ -1,0 +1,94 @@
+<?php
+
+namespace Ibrows\MediaBundle\Form\Subscriber;
+
+use Ibrows\MediaBundle\Manager\MediaTypeManager;
+
+use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Symfony\Component\Translation\TranslatorInterface;
+use Symfony\Component\Form\FormEvents;
+use Symfony\Component\Form\FormEvent;
+use Symfony\Component\Form\FormError;
+
+class MediaTypeGuessSubscriber implements EventSubscriberInterface
+{
+    protected $manager;
+    protected $translator;
+    protected $oldData;
+    
+    public function __construct(MediaTypeManager $manager, TranslatorInterface $translator)
+    {
+        $this->manager = $manager;
+        $this->translator = $translator;
+    }
+    
+    public static function getSubscribedEvents()
+    {
+        return array(
+                FormEvents::PRE_BIND => 'preBind',
+                FormEvents::POST_BIND => 'postBind'
+        );
+    }
+    
+    public function preBind(FormEvent $event)
+    {
+        $form = $event->getForm();
+        $data = $form->getData();
+        $this->oldData = $data ? $data->getData() : null;
+    }
+
+    public function postBind(FormEvent $event)
+    {
+        $form = $event->getForm();
+        $media = $event->getData();
+        if (!$media) {
+            return;
+        }
+        
+        $value = $media->getData();
+        $config = $form->getConfig();
+        
+        if ($config->getOption('ignore_empty_update') && $value === null) {
+            $media->setData($this->oldData);
+            return;
+        }
+        
+        $typeName = $config->getOption('type');
+        if ($typeName) {
+            $type = $this->manager->getType($typeName);
+            if (!$type->supports($value)) {
+                $type = null;
+            }
+        } else {
+            $type = $this->getBestMatchingType($value);
+        }
+        
+        if ($type) {
+            $media->setType($type->getName());
+            $this->addFormError($form, $type->validate($value));
+        } else {
+            $this->addFormError($form, 'media.type.unsupported');
+        }
+    }
+    
+    protected function getBestMatchingType($value)
+    {
+        $types = $this->manager->getSupportingTypes($value);
+        if(count($types)>1) {
+            $type = $this->manager->guessBestSupportingType($value, $types);
+        } else {
+            $type = reset($types);
+        }
+    
+        return $type;
+    }
+    
+    protected function addFormError($form, $message)
+    {
+        if ($message) {
+            $message = $this->translator->trans($message, array(), 'validators');
+            $error = new FormError($message);
+            $form->addError($error);
+        }
+    }
+}

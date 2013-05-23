@@ -1,0 +1,50 @@
+{% macro show(media, options) %}
+{% set removable = options['removable']|default(false) %}
+{% set format = options['format']|default('small') %}
+
+{% if media %}
+    {% if removable %}
+        {{ block(media.type~'_removable') }}
+    {% else %}
+        {{ block(media.type) }}
+    {% endif %}
+{% endif %}
+{% endmacro %}
+
+{% block remove %}
+{% endblock %}
+
+{% block youtube %}
+<iframe width="550" height="420" src="{{ media.url }}" allowfullscreen></iframe>
+{% endblock %}
+
+{% block youtube_removable %}
+{{ block('remove') }}
+{{ block('youtube') }}
+{% endblock %}
+
+{% block soundcloud %}
+{{ media.html|raw }}
+{% endblock %}
+
+{% block soundcloud_removable %}
+{{ block('remove') }}
+{{ block('soundcloud') }}
+{% endblock %}
+
+{% block image %}
+<img src="{{ media.url }}" alt="{{ entity.username|default('') }}" />
+{% endblock %}
+
+{% block image_removable %}
+{{ block('remove') }}
+{{ block('image') }}
+{% endblock %}
+
+{% block uploadedimage %}
+{{ block('image') }}
+{% endblock %}
+
+{% block uploadedimage_removable %}
+{{ block('image_removable') }}
+{% endblock %}
