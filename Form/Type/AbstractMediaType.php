@@ -13,7 +13,7 @@ abstract class AbstractMediaType extends AbstractType
                 'type' => null,
                 'error_bubbling' => false,
                 'ignore_empty_update' => false,
-                'data_class' => 'Ibrows\MediaBundle\Model\Media'
+                'data_class' => 'Ibrows\JaybooBundle\Entity\Media'
         ));
     }
 }

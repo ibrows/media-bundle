@@ -2,52 +2,210 @@
 
 namespace Ibrows\MediaBundle\Type;
 
-use Symfony\Component\HttpFoundation\File\File;
-
-use Symfony\Component\HttpFoundation\File\Exception\FileNotFoundException;
+use Ibrows\MediaBundle\Model\MediaInterface;
 
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\HttpFoundation\File\Exception\FileNotFoundException;
 
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 class UploadedImageType extends AbstractMediaType
 {
+    /**
+     * @var string
+     */
     protected $upload_dir;
+    /**
+     * @var string
+     */
     protected $uri_prefix;
-    protected $container;
-    protected $formats;
+    /**
+     * @var number
+     */
+    protected $maxSize;
+    /**
+     * @var number
+     */
     protected $maxHeight;
+    /**
+     * @var number
+     */
     protected $maxWidth;
+    /**
+     * @var array
+     */
+    protected $formats;
+    /**
+     * @var array
+     */
+    protected $mimeTypes;
     
-    public function __construct($upload_dir, $uri_prefix, $max_width, $max_height, $formats)
+    /**
+     * @var ContainerInterface
+     */
+    protected $container;
+    
+    public function __construct($upload_dir, $uri_prefix, $max_width, $max_height, $max_size, array $mime_types, array $formats)
     {
         $this->upload_dir = $upload_dir;
         $this->uri_prefix = $uri_prefix;
-        //TODO: parameter
+        
         $this->maxWidth =  $max_width;
         $this->maxHeight = $max_height;
+        $this->maxSize = $max_size;
+        
+        $this->mimeTypes = $mime_types;
         $this->formats = $formats;
     }
     
+    /**
+     * @param ContainerInterface $container
+     * @return \Ibrows\MediaBundle\Type\UploadedImageType
+     */
     public function setContainer(ContainerInterface $container)
     {
         $this->container = $container;
+        return $this;
     }
     
-    public function prePersist($path)
+    /**
+     * @param string $link
+     */
+    public function supports($file)
     {
-        if(!file_exists($path)){
-            throw new FileNotFoundException($path);
+        return  $file instanceof UploadedFile &&
+        $this->supportsMimeType($file);
+    }
+    
+    /**
+     * @param UploadedFile $file
+     * @return boolean
+     */
+    protected function supportsMimeType(UploadedFile $file)
+    {
+        $mime = $file->getMimeType();
+    
+        return array_search($mime, $this->mimeTypes) !== false;
+    }
+    
+    /**
+     * {@inheritdoc}
+     */
+    public function validate($file)
+    {
+        /* @var $file UploadedFile */
+        $fileSizeError = $this->validateFileSize($file);
+        if ($fileSizeError) {
+            return $fileSizeError;
         }
         
-        $newpath = $this->resizeImage($path->getPathname(), $this->maxWidth, $this->maxHeight);
-        return $newpath;
+        $imgSizeError = $this->validateImgSize($file);
+        if ($imgSizeError) {
+            return $imgSizeError;
+        }
     }
     
-    public function postDelete($data, $extra)
+    /**
+     * 
+     * @param UploadedFile $file
+     * @return void|string
+     */
+    protected function validateFileSize(UploadedFile $file)
     {
-        if(file_exists($data)){
-            unlink($data);
+        if (!$this->maxSize) {
+            return;
+        }
+        
+        $fileSize = $file->getSize();
+        if ($fileSize > $this->maxSize) {
+            return 'media.error.fileSize';
+        }
+    }
+
+    /**
+     * 
+     * @param UploadedFile $file
+     * @return void|string
+     */
+    protected function validateImgSize(UploadedFile $file)
+    {
+        if (!$this->maxHeight && !$this->maxWidth) {
+            return;
+        }
+        
+        $img = new \Imagick($file->getPathname());
+        $height = $img->getimageheight();
+        $width = $img->getimagewidth();
+        
+        if ($height > $this->maxHeight || $width > $this->maxWidth) {
+            return 'media.error.imageSize';
+        }
+    }
+    
+    /**
+     * {@inheritdoc}
+     */
+    protected function preTransformData($file)
+    {
+        if(!file_exists($file)){
+            throw new FileNotFoundException($file->getPathname());
+        }
+        
+        $newFile = $this->moveToWeb($file);
+        return $newFile;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function postTransformData($file)
+    {
+        return $file->getPathname();
+    }
+    
+    /**
+     * @param UploadedFile $file
+     * @return UploadedFile pointing to the new location
+     */
+    protected function moveToWeb(UploadedFile $file)
+    {
+        $directory = $this->getWebDir($file);
+        $filename = $this->getWebFilename($file);
+        $newFile = $file->move($directory, $filename);
+        
+        return new UploadedFile($newFile->getPathname(), $file->getClientOriginalName());
+    }
+    
+    /**
+     * {@inheritdoc}
+     */
+    public function postLoad(MediaInterface $media)
+    {
+        $data = $media->getData();
+        $extra = $media->getExtra();
+        $originalFilename = '';
+        if (array_key_exists('originalFilename', $extra)) {
+            $originalFilename = $extra['originalFilename'];
+        }
+        
+        $file = null;
+        if (file_exists($data)) {
+            $file = new UploadedFile($data, $originalFilename);
+        }
+        
+        $media->setData($file);
+    }
+    
+    /**
+     * {@inheritdoc}
+     */
+    public function postRemove(MediaInterface $media)
+    {
+        $file = $media->getData();
+        $extra = $media->getExtra();
+        
+        if(file_exists($file)){
+            unlink($file);
         }
         
         if ($extra && is_array($extra)){
@@ -62,7 +220,11 @@ class UploadedImageType extends AbstractMediaType
         }
     }
     
-    protected function getDir($data)
+    /**
+     * @param UploadedFile $file
+     * @return string
+     */
+    protected function getWebDir(UploadedFile $file)
     {
         if (!is_dir($this->upload_dir)) {
             mkdir($this->upload_dir, 0777, true);
@@ -71,49 +233,49 @@ class UploadedImageType extends AbstractMediaType
         return $this->upload_dir;
     }
     
-    protected function getFilename($data)
+    /**
+     * @param UploadedFile $file
+     * @return string
+     */
+    protected function getWebFilename(UploadedFile $file)
     {
         return uniqid(null, true);
     }
     
     /**
-     * @param string $link
+     * {@inheritdoc}
      */
-    public function supports($file)
+    public function generateExtra($file)
     {
-        return  $file instanceof UploadedFile &&
-                    $this->supportsMimeType($file);
-    }
-    
-    protected function supportsMimeType($file)
-    {
-        $mime = $file->getMimeType();
-        
-        return $mime === 'image/jpeg' || $mime === 'image/png';
-    }
-    
-    public function generateExtra($data)
-    {
-        $extra = array();
+        $extra = array(
+                'originalFilename' => $file->getClientOriginalName()
+        );
         foreach ($this->formats as $name => $format) {
             $width = array_key_exists('width', $format) ? $format['width'] : null;
             $height = array_key_exists('height', $format) ? $format['height'] : null;
             
-            $filename = $this->resizeImage($data, $width, $height);
+            $resizedFile = $this->resizeImage($file, $width, $height);
             $extra = array_merge($extra, array(
-                    "{$name}_filename" => $filename,
-                    $name => $this->getUrl($filename)
+                    "{$name}_filename" => $resizedFile->getPathname(),
+                    $name => $this->getWebUrl($resizedFile)
             ));
         }
         
         return $extra;
     }
     
-    protected function resizeImage($data,  $targetwidth, $targetheight)
+    /**
+     * @param \Symfony\Component\HttpFoundation\UploadedFile\UploadedFile $file
+     * @param number|null $targetwidth
+     * @param number|null $targetheight
+     * 
+     * @return \Symfony\Component\HttpFoundation\UploadedFile\UploadedFile
+     */
+    protected function resizeImage(UploadedFile $file,  $targetwidth, $targetheight)
     {
-        $targetfile = $this->getDir($data).'/'.$this->getFilename($data);
+        $targetfilename = $this->getWebDir($file).'/'.$this->getWebFilename($file);
 
-        $img = new \Imagick($data);
+        $img = new \Imagick($file->getPathname());
         $height = $img->getimageheight();
         $width = $img->getimagewidth();
         $factor = $height/$width;
@@ -125,20 +287,25 @@ class UploadedImageType extends AbstractMediaType
         }
         
         $img->cropthumbnailimage($targetwidth, $targetheight);
-        $img->writeimage($targetfile);
+        $img->writeimage($targetfilename);
         
-        return $targetfile;
+        return new UploadedFile($targetfilename, $file->getClientOriginalName());
     }
     
-    public function generateUrl($data, $extra)
+    /**
+     * {@inheritdoc}
+     */
+    public function generateUrl($file, $extra)
     {
-        return $this->getUrl($data);
+        return $this->getWebUrl($file);
     }
     
-    protected function getUrl($data)
+    /**
+     * @param UploadedFile $file
+     * @return the web url of the file
+     */
+    protected function getWebUrl(UploadedFile $file)
     {
-        $file = new File($data);
-        
         $uri_prefix = substr($this->uri_prefix, 1);
         $url = $this->container->get('templating.helper.assets')->getUrl($uri_prefix.'/'.$file->getFilename());
         return $url;

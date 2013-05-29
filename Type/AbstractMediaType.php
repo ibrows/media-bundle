@@ -2,40 +2,71 @@
 
 namespace Ibrows\MediaBundle\Type;
 
+use Ibrows\MediaBundle\Model\MediaInterface;
+
 abstract class AbstractMediaType implements MediaTypeInterface
 {
-    public function prePersist($data) 
-    {
-        return $data;
-    }
     
     public function validate($data)
     {
         return null;
     }
     
-    public function preUpdate($newdata, $olddata, $oldextra)
+    protected function preTransformData($data)
     {
-        $this->postDelete($olddata, $oldextra);
-        return $this->prePersist($newdata);
+        return $data;
     }
     
-    public function generateExtra($data)
+    protected function postTransformData($data)
     {
-        return null;
+        return $data;
     }
     
-    public function generateUrl($data, $extra)
-    {
-        return null;
-    }
-    
-    public function generateHtml($data, $extra)
+    protected function generateExtra($data)
     {
         return null;
     }
     
-    public function postDelete($data, $extra)
+    protected function generateUrl($data, $extra)
+    {
+        return null;
+    }
+    
+    protected function generateHtml($data, $extra)
+    {
+        return null;
+    }
+    
+    public function prePersist(MediaInterface $media)
+    {
+        $data = $this->preTransformData($media->getData());
+        $extra = $this->generateExtra($data);
+        
+        $media->setExtra($extra);
+        $media->setUrl($this->generateUrl($data, $extra));
+        $media->setHtml($this->generateHtml($data, $extra));
+        
+        $data = $this->postTransformData($data);
+        $media->setData($data);
+    }
+    
+    public function preUpdate(MediaInterface $media, array $changeSet)
+    {
+        $olddata = $changeSet['data'][0];
+        $newdata = $changeSet['data'][1];
+        
+        $media->setData($olddata);
+        $this->postRemove($media);
+        
+        $media->setData($newdata);
+        $this->prePersist($media);
+    }
+    
+    public function postRemove(MediaInterface $media)
+    {
+    }
+    
+    public function postLoad(MediaInterface $media)
     {
     }
 }

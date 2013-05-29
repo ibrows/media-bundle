@@ -23,9 +23,7 @@ class MediaUploadFormType extends AbstractMediaType
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
-            ->add('data', 'file', array(
-                'data_class' => null
-            ))
+            ->add('data', 'file')
         ;
 
         $builder->addEventSubscriber($this->subscriber);

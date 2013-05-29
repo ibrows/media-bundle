@@ -35,6 +35,8 @@
             <argument>%ibrows_media.uri_prefix%</argument>
             <argument>%ibrows_media.uploadedimage.max_width%</argument>
             <argument>%ibrows_media.uploadedimage.max_height%</argument>
+            <argument>%ibrows_media.uploadedimage.max_size%</argument>
+            <argument>%ibrows_media.uploadedimage.mime_types%</argument>
             <argument>%ibrows_media.uploadedimage.formats%</argument>
             <call method="setContainer">
 		        <argument type="service" id="service_container" />

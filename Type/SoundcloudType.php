@@ -23,7 +23,7 @@ class SoundcloudType extends AbstractMediaType
         return strpos($data, 'snd.sc/') !== false;
     }
     
-    public function generateExtra($url)
+    protected function generateExtra($url)
     {
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, "http://soundcloud.com/oembed?format=json&url=$url");
@@ -35,7 +35,7 @@ class SoundcloudType extends AbstractMediaType
         return $data;
     }
     
-    public function generateHtml($data, $extra)
+    protected function generateHtml($data, $extra)
     {
         return $extra['html'];
     }

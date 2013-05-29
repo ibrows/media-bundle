@@ -2,6 +2,8 @@
 
 namespace Ibrows\MediaBundle\Doctrine\Subscriber;
 
+use Ibrows\JaybooBundle\Entity\User;
+
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Doctrine\Common\EventSubscriber;
 use Doctrine\ORM\Event\LifecycleEventArgs;
@@ -29,21 +31,23 @@ class MediaTypeSubscriber implements EventSubscriber
         return array(
                 Events::prePersist,
                 Events::preUpdate,
-                Events::postRemove
+                Events::postRemove,
+                Events::postLoad
         );
     }
     
+    /**
+     * Post load
+     * 
+     * @param LifecycleEventArgs $args
+     */
     public function postLoad(LifecycleEventArgs $args)
     {
         $media = $this->getObject($args);
         
-        if ($media instanceof MediaInterface && $media->getType() == 'uploadedimage') {
-            $data = $media->getData();
-            if (file_exists($data)) {
-                $media->setData(new UploadedFile($data, ''));
-            } else {
-                $media->setData(null);
-            }
+        if ($media instanceof MediaInterface) {
+            $type = $this->manager->getType($media->getType());
+            $type->postLoad($media);
         }
     }
 
@@ -58,18 +62,16 @@ class MediaTypeSubscriber implements EventSubscriber
         $em = $args->getEntityManager();
         
         if ($media instanceof MediaInterface) {
-            $value = $media->getData();
             $type = $this->manager->getType($media->getType());
-            $value = $type->prePersist($media->getData());
-        
-            $extra = $type->generateExtra($value);
-            $media->setData($value);
-            $media->setExtra($extra);
-            $media->setUrl($type->generateUrl($value, $extra));
-            $media->setHtml($type->generateHtml($value, $extra));
+            $type->prePersist($media);
         }
     }
     
+    /**
+     * Transform the media files
+     * 
+     * @param PreUpdateEventArgs $args
+     */
     public function preUpdate(PreUpdateEventArgs $args)
     {
         $media = $this->getObject($args);
@@ -78,21 +80,11 @@ class MediaTypeSubscriber implements EventSubscriber
         $uow = $em->getUnitOfWork();
         
         if ($media instanceof MediaInterface && $args->hasChangedField('data')) {
-            $mediaMeta = $em->getClassMetadata(get_class($media));
+            throw new \Exception();
             $type = $this->manager->getType($media->getType());
-            $value = $args->getNewValue('data');
-            $oldvalue = $args->getOldValue('data');
+            $type->preUpdate($media, $args->getEntityChangeSet());
             
-            $value = $type->preUpdate($value, $oldvalue, $media->getExtra());
-            $extra = $type->generateExtra($value);
-            $url = $type->generateUrl($value, $extra);
-            $html = $type->generateHtml($value, $extra);
-            
-            $media->setData($value);
-            $media->setExtra($extra);
-            $media->setUrl($url);
-            $media->setHtml($html);
-            
+            $mediaMeta = $em->getClassMetadata(get_class($media));
             $uow->recomputeSingleEntityChangeSet($mediaMeta, $media);
         }
     }
@@ -108,11 +100,14 @@ class MediaTypeSubscriber implements EventSubscriber
         
         if ($media instanceof MediaInterface) {
             $type = $this->manager->getType($media->getType());
-            
-            $type->postDelete($media->getData(), $media->getExtra());
+            $type->postRemove($media);
         }
     }
     
+    /**
+     * @param LifecycleEventArgs $args
+     * @return mixed
+     */
     protected function getObject(LifecycleEventArgs $args)
     {
         return $args->getEntity();

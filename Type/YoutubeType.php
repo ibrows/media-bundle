@@ -23,7 +23,7 @@ class YoutubeType extends AbstractMediaType
         return strpos($url, 'youtu.be/') !== false;
     }
     
-    public function generateExtra($url)
+    protected function generateExtra($url)
     {
         if ($this->isFullLink($url)) {
             $matches = array();
@@ -77,7 +77,7 @@ class YoutubeType extends AbstractMediaType
         );
     }
     
-    public function generateUrl($url, $extra)
+    protected function generateUrl($url, $extra)
     {
         $videoid = $extra['videoid'];
         $parameters = $extra['parameters'];

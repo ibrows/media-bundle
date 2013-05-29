@@ -2,6 +2,8 @@
 
 namespace Ibrows\MediaBundle\Manager;
 
+use Ibrows\MediaBundle\Exception\TypeAlreadyRegisteredException;
+
 use Ibrows\MediaBundle\Type\MediaTypeInterface;
 
 class MediaTypeManager
@@ -22,6 +24,10 @@ class MediaTypeManager
     public function addMediaType($serviceId, MediaTypeInterface $type)
     {
         $name = $type->getName();
+        if (array_key_exists($name, $this->registered_types)) {
+            throw new TypeAlreadyRegisteredException($type);
+        }
+        
         $this->registered_types[$name] = $type;
         if (array_key_exists($name, $this->enabled_types)) {
             $this->enabled_types[$name] = $type;
