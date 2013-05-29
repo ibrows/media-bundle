@@ -4,6 +4,7 @@ namespace Ibrows\MediaBundle\Type;
 
 use Ibrows\MediaBundle\Model\MediaInterface;
 
+use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\File\Exception\FileNotFoundException;
 
@@ -73,15 +74,15 @@ class UploadedImageType extends AbstractMediaType
      */
     public function supports($file)
     {
-        return  $file instanceof UploadedFile &&
+        return  $file instanceof File &&
         $this->supportsMimeType($file);
     }
     
     /**
-     * @param UploadedFile $file
+     * @param File $file
      * @return boolean
      */
-    protected function supportsMimeType(UploadedFile $file)
+    protected function supportsMimeType(File $file)
     {
         $mime = $file->getMimeType();
     
@@ -93,7 +94,7 @@ class UploadedImageType extends AbstractMediaType
      */
     public function validate($file)
     {
-        /* @var $file UploadedFile */
+        /* @var $file File */
         $fileSizeError = $this->validateFileSize($file);
         if ($fileSizeError) {
             return $fileSizeError;
@@ -107,10 +108,10 @@ class UploadedImageType extends AbstractMediaType
     
     /**
      * 
-     * @param UploadedFile $file
+     * @param File $file
      * @return void|string
      */
-    protected function validateFileSize(UploadedFile $file)
+    protected function validateFileSize(File $file)
     {
         if (!$this->maxSize) {
             return;
@@ -124,10 +125,10 @@ class UploadedImageType extends AbstractMediaType
 
     /**
      * 
-     * @param UploadedFile $file
+     * @param File $file
      * @return void|string
      */
-    protected function validateImgSize(UploadedFile $file)
+    protected function validateImgSize(File $file)
     {
         if (!$this->maxHeight && !$this->maxWidth) {
             return;
@@ -137,8 +138,12 @@ class UploadedImageType extends AbstractMediaType
         $height = $img->getimageheight();
         $width = $img->getimagewidth();
         
-        if ($height > $this->maxHeight || $width > $this->maxWidth) {
-            return 'media.error.imageSize';
+        if ($this->maxHeight && $height > $this->maxHeight) {
+            return 'media.error.imageHeight';
+        }
+        
+        if ($this->maxWidth && $width > $this->maxWidth) {
+            return 'media.error.imageWidth';
         }
     }
     
@@ -148,7 +153,7 @@ class UploadedImageType extends AbstractMediaType
     protected function preTransformData($file)
     {
         if(!file_exists($file)){
-            throw new FileNotFoundException($file->getPathname());
+            throw new FileNotFoundException($file);
         }
         
         $newFile = $this->moveToWeb($file);
@@ -190,7 +195,7 @@ class UploadedImageType extends AbstractMediaType
         
         $file = null;
         if (file_exists($data)) {
-            $file = new UploadedFile($data, $originalFilename);
+            $file = new File($data);
         }
         
         $media->setData($file);
@@ -221,10 +226,10 @@ class UploadedImageType extends AbstractMediaType
     }
     
     /**
-     * @param UploadedFile $file
+     * @param File $file
      * @return string
      */
-    protected function getWebDir(UploadedFile $file)
+    protected function getWebDir(File $file)
     {
         if (!is_dir($this->upload_dir)) {
             mkdir($this->upload_dir, 0777, true);
@@ -234,10 +239,10 @@ class UploadedImageType extends AbstractMediaType
     }
     
     /**
-     * @param UploadedFile $file
+     * @param File $file
      * @return string
      */
-    protected function getWebFilename(UploadedFile $file)
+    protected function getWebFilename(File $file)
     {
         return uniqid(null, true);
     }
@@ -265,13 +270,13 @@ class UploadedImageType extends AbstractMediaType
     }
     
     /**
-     * @param \Symfony\Component\HttpFoundation\UploadedFile\UploadedFile $file
+     * @param \Symfony\Component\HttpFoundation\File\File $file
      * @param number|null $targetwidth
      * @param number|null $targetheight
      * 
-     * @return \Symfony\Component\HttpFoundation\UploadedFile\UploadedFile
+     * @return \Symfony\Component\HttpFoundation\File\File
      */
-    protected function resizeImage(UploadedFile $file,  $targetwidth, $targetheight)
+    protected function resizeImage(File $file,  $targetwidth, $targetheight)
     {
         $targetfilename = $this->getWebDir($file).'/'.$this->getWebFilename($file);
 
@@ -289,7 +294,7 @@ class UploadedImageType extends AbstractMediaType
         $img->cropthumbnailimage($targetwidth, $targetheight);
         $img->writeimage($targetfilename);
         
-        return new UploadedFile($targetfilename, $file->getClientOriginalName());
+        return new File($targetfilename);
     }
     
     /**
@@ -301,14 +306,25 @@ class UploadedImageType extends AbstractMediaType
     }
     
     /**
-     * @param UploadedFile $file
+     * @param File $file
      * @return the web url of the file
      */
-    protected function getWebUrl(UploadedFile $file)
+    protected function getWebUrl(File $file)
     {
         $uri_prefix = substr($this->uri_prefix, 1);
         $url = $this->container->get('templating.helper.assets')->getUrl($uri_prefix.'/'.$file->getFilename());
         return $url;
+    }
+    
+    public function preUpdate(MediaInterface $media, array $changeSet)
+    {
+        $olddata = $changeSet['data'][0];
+        $newdata = $changeSet['data'][1];
+        if ($olddata === $newdata->getPathname()) {
+            return;
+        }
+        
+        parent::preUpdate($media, $changeSet);
     }
     
     public function getName()

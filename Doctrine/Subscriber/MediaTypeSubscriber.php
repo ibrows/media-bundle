@@ -80,7 +80,6 @@ class MediaTypeSubscriber implements EventSubscriber
         $uow = $em->getUnitOfWork();
         
         if ($media instanceof MediaInterface && $args->hasChangedField('data')) {
-            throw new \Exception();
             $type = $this->manager->getType($media->getType());
             $type->preUpdate($media, $args->getEntityChangeSet());
             

@@ -39,7 +39,8 @@ abstract class AbstractMediaType implements MediaTypeInterface
     
     public function prePersist(MediaInterface $media)
     {
-        $data = $this->preTransformData($media->getData());
+        $data = $media->getData();
+        $data = $this->preTransformData($data);
         $extra = $this->generateExtra($data);
         
         $media->setExtra($extra);
@@ -54,7 +55,7 @@ abstract class AbstractMediaType implements MediaTypeInterface
     {
         $olddata = $changeSet['data'][0];
         $newdata = $changeSet['data'][1];
-        
+
         $media->setData($olddata);
         $this->postRemove($media);
         
