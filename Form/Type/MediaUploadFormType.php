@@ -2,6 +2,8 @@
 
 namespace Ibrows\MediaBundle\Form\Type;
 
+use Symfony\Component\OptionsResolver\OptionsResolverInterface;
+
 use Symfony\Component\Form\FormBuilderInterface;
 
 use Ibrows\MediaBundle\Form\Subscriber\MediaTypeGuessSubscriber;
@@ -27,6 +29,15 @@ class MediaUploadFormType extends AbstractMediaType
         ;
 
         $builder->addEventSubscriber($this->subscriber);
+    }
+    
+    public function setDefaultOptions(OptionsResolverInterface $resolver)
+    {
+        $resolver->setDefaults(array(
+                'type' => null,
+                'error_bubbling' => false,
+                'ignore_empty_update' => true,
+        ));
     }
     
     /**

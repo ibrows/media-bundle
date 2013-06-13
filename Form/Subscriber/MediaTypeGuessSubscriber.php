@@ -2,6 +2,8 @@
 
 namespace Ibrows\MediaBundle\Form\Subscriber;
 
+use Ibrows\MediaBundle\Exception\MissingDataClassException;
+
 use Ibrows\MediaBundle\Manager\MediaTypeManager;
 
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -45,6 +47,9 @@ class MediaTypeGuessSubscriber implements EventSubscriberInterface
             return;
         }
         
+        if (is_array($media)) {
+            throw new MissingDataClassException($form);
+        }
         $value = $media->getData();
         $config = $form->getConfig();
         

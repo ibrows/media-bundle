@@ -23,6 +23,7 @@ class Configuration implements ConfigurationInterface
 
         $this->addMediaSection($rootNode);
         $this->addUploadedImageSection($rootNode);
+        $this->addUploadedFileSection($rootNode);
 
         return $treeBuilder;
     }
@@ -45,7 +46,7 @@ class Configuration implements ConfigurationInterface
     {
         $node
             ->children()
-                ->arrayNode('uploadedimage')
+                ->arrayNode('image')
                     ->children()
                         ->scalarNode('max_width')->defaultNull()->end()
                         ->scalarNode('max_height')->defaultNull()->end()
@@ -59,6 +60,24 @@ class Configuration implements ConfigurationInterface
                                 ->end()
                             ->end()
                         ->end()
+                        ->arrayNode('mime_types')
+                            ->isRequired()
+                            ->useAttributeAsKey('name')
+                            ->prototype('scalar')->end()
+                        ->end()
+                    ->end()
+                ->end()
+            ->end()
+        ;
+    }
+    
+    protected function addUploadedFileSection(ArrayNodeDefinition $node)
+    {
+        $node
+            ->children()
+                ->arrayNode('file')
+                    ->children()
+                        ->scalarNode('max_size')->defaultNull()->end()
                         ->arrayNode('mime_types')
                             ->isRequired()
                             ->useAttributeAsKey('name')

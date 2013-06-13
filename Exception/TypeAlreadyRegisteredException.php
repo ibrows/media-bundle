@@ -13,7 +13,7 @@ class TypeAlreadyRegisteredException extends \Exception
      */
     public function __construct(MediaTypeInterface $type)
     {
-        $message = sprintf('A media type with name "%s" is already registered. Did you forget to overwrite the getName() method?', $type->getName());
+        $message = sprintf('A media type with name "%s" is already registered. Did you forget to overwrite the getName() method in "%s"?', $type->getName(), get_class($type));
         parent::__construct($message);
     }
 

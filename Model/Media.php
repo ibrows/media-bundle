@@ -6,7 +6,7 @@ use Doctrine\ORM\Mapping as ORM;
 
 class Media implements MediaInterface
 {
-        /**
+    /**
      * @var string
      * 
      * @ORM\Column(type="string", nullable=true)
