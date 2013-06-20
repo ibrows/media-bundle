@@ -159,10 +159,10 @@ class UploadedImageType extends AbstractUploadedType
         $width = $img->getimagewidth();
         $factor = $height/$width;
         if (!$targetheight) {
-            $targetheight = $factor * $targetwidth;
+            $targetheight = intval($targetwidth * $factor);
         }
         if (!$targetwidth) {
-            $targetwidth = $factor * $targetheight;
+            $targetwidth = intval($targetheight / $factor);
         }
         
         $img->cropthumbnailimage($targetwidth, $targetheight);
