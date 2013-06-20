@@ -47,6 +47,7 @@ class Configuration implements ConfigurationInterface
         $node
             ->children()
                 ->arrayNode('image')
+                    ->addDefaultsIfNotSet()
                     ->children()
                         ->scalarNode('max_width')->defaultNull()->end()
                         ->scalarNode('max_height')->defaultNull()->end()
@@ -76,6 +77,7 @@ class Configuration implements ConfigurationInterface
         $node
             ->children()
                 ->arrayNode('file')
+                    ->addDefaultsIfNotSet()
                     ->children()
                         ->scalarNode('max_size')->defaultNull()->end()
                         ->arrayNode('mime_types')
