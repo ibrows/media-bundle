@@ -62,7 +62,7 @@ abstract class AbstractUploadedType extends AbstractMediaType
     public function supports($file)
     {
         return  $file instanceof File &&
-        $this->supportsMimeType($file);
+                    $this->supportsMimeType($file);
     }
     
     /**

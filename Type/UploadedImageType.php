@@ -2,6 +2,8 @@
 
 namespace Ibrows\MediaBundle\Type;
 
+use Symfony\Component\HttpFoundation\File\UploadedFile;
+
 use Symfony\Component\HttpFoundation\File\File;
 
 class UploadedImageType extends AbstractUploadedType
@@ -43,7 +45,11 @@ class UploadedImageType extends AbstractUploadedType
      */
     protected function supportsMimeType(File $file)
     {
-        $mime = $file->getMimeType();
+        if ($file instanceof UploadedFile) {
+            $mime = $file->getClientMimeType();
+        } else {
+            $mime = $file->getMimeType();
+        }
     
         return array_search($mime, $this->mimeTypes) !== false;
     }
