@@ -2,6 +2,8 @@
 
 namespace Ibrows\MediaBundle\Type;
 
+use Symfony\Component\Form\FormError;
+
 use Symfony\Component\HttpFoundation\File\File;
 
 class UploadedFileType extends AbstractUploadedType
@@ -57,7 +59,9 @@ class UploadedFileType extends AbstractUploadedType
     
         $fileSize = $file->getSize();
         if ($fileSize > $this->maxSize) {
-            return 'media.error.fileSize';
+            return new FormError(null, 'media.error.fileSize', array(
+                    '%size%' => $this->maxSize
+            ));
         }
     }
     

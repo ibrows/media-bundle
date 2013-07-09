@@ -90,7 +90,14 @@ class MediaTypeGuessSubscriber implements EventSubscriberInterface
     
     protected function addFormError($form, $message)
     {
-        if ($message) {
+        if ($message instanceof FormError) {
+            if (!$message->getMessage()) {
+                $template = $message->getMessageTemplate();
+                $params = $message->getMessageParameters();
+                $message = new FormError($this->translator->trans($template, $params, 'validators'));
+            }
+            $form->addError($message);
+        } else if ($message) {
             $message = $this->translator->trans($message, array(), 'validators');
             $error = new FormError($message);
             $form->addError($error);

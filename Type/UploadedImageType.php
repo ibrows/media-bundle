@@ -2,6 +2,8 @@
 
 namespace Ibrows\MediaBundle\Type;
 
+use Symfony\Component\Form\FormError;
+
 use Symfony\Component\HttpFoundation\File\Exception\FileNotFoundException;
 use Symfony\Component\HttpFoundation\File\File;
 
@@ -84,7 +86,9 @@ class UploadedImageType extends AbstractUploadedType
         
         $fileSize = $file->getSize();
         if ($fileSize > $this->maxSize) {
-            return 'media.error.fileSize';
+            return new FormError(null, 'media.error.fileSize', array(
+                    '%size%' => $this->maxSize
+            ));
         }
     }
 
@@ -104,11 +108,15 @@ class UploadedImageType extends AbstractUploadedType
         $width = $img->getimagewidth();
         
         if ($this->maxHeight && $height > $this->maxHeight) {
-            return 'media.error.imageHeight';
+            return new FormError(null, 'media.error.imageHeight', array(
+                    '%height%' => $this->maxHeight
+            ));
         }
         
         if ($this->maxWidth && $width > $this->maxWidth) {
-            return 'media.error.imageWidth';
+            return new FormError(null, 'media.error.imageWidth', array(
+                    '%width%' => $this->maxWidth
+            ));
         }
     }
     
