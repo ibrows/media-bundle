@@ -2,8 +2,7 @@
 
 namespace Ibrows\MediaBundle\Type;
 
-use Symfony\Component\HttpFoundation\File\UploadedFile;
-
+use Symfony\Component\HttpFoundation\File\Exception\FileNotFoundException;
 use Symfony\Component\HttpFoundation\File\File;
 
 class UploadedImageType extends AbstractUploadedType
@@ -45,10 +44,11 @@ class UploadedImageType extends AbstractUploadedType
      */
     protected function supportsMimeType(File $file)
     {
-        if ($file instanceof UploadedFile) {
-            $mime = $file->getClientMimeType();
-        } else {
+        try {
             $mime = $file->getMimeType();
+        } catch (FileNotFoundException $e) {
+            // this might happen if upload_max_filesize is set too small
+            throw new \Exception('File could not be uploaded. Did you set the upload_max_filesize too small?');
         }
     
         return array_search($mime, $this->mimeTypes) !== false;
