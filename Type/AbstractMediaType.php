@@ -6,6 +6,10 @@ use Ibrows\MediaBundle\Model\MediaInterface;
 
 abstract class AbstractMediaType implements MediaTypeInterface
 {
+    /**
+     * @var \Ibrows\MediaBundle\Model\MediaInterface
+     */
+    protected $media;
     
     public function validate($data)
     {
@@ -39,6 +43,7 @@ abstract class AbstractMediaType implements MediaTypeInterface
     
     public function prePersist(MediaInterface $media)
     {
+        $this->media = $media;
         $data = $media->getData();
         $data = $this->preTransformData($data);
         $extra = $this->generateExtra($data);
@@ -53,6 +58,7 @@ abstract class AbstractMediaType implements MediaTypeInterface
     
     public function preUpdate(MediaInterface $media, array $changeSet)
     {
+        $this->media = $media;
         $olddata = $changeSet['data'][0];
         $newdata = $changeSet['data'][1];
 
