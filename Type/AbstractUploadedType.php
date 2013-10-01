@@ -169,7 +169,7 @@ abstract class AbstractUploadedType extends AbstractMediaType
      * @param File $file
      * @return string
      */
-    protected function getWebFilename(File $file)
+    protected function getWebFilename(File $file, $format = null)
     {
         return uniqid(null, true);
     }

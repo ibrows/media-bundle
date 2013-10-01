@@ -147,7 +147,7 @@ class UploadedImageType extends AbstractUploadedType
             $width = array_key_exists('width', $format) ? $format['width'] : null;
             $height = array_key_exists('height', $format) ? $format['height'] : null;
             
-            $resizedFile = $this->resizeImage($file, $width, $height);
+            $resizedFile = $this->resizeImage($file, $name, $width, $height);
             $extra = array_merge($extra, array(
                     "{$name}_filename" => $resizedFile->getPathname(),
                     $name => $this->getWebUrl($resizedFile)
@@ -164,9 +164,9 @@ class UploadedImageType extends AbstractUploadedType
      * 
      * @return \Symfony\Component\HttpFoundation\File\File
      */
-    protected function resizeImage(File $file,  $targetwidth, $targetheight)
+    protected function resizeImage(File $file, $format, $targetwidth, $targetheight)
     {
-        $targetfilename = $this->getWebDir($file).'/'.$this->getWebFilename($file);
+        $targetfilename = $this->getWebDir($file).DIRECTORY_SEPARATOR.$this->getWebFilename($file, $format);
 
         $img = new \Imagick($file->getPathname());
         $height = $img->getimageheight();
