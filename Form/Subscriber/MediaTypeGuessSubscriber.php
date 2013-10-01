@@ -27,19 +27,19 @@ class MediaTypeGuessSubscriber implements EventSubscriberInterface
     public static function getSubscribedEvents()
     {
         return array(
-                FormEvents::PRE_BIND => 'preBind',
-                FormEvents::POST_BIND => 'postBind'
+                FormEvents::PRE_SUBMIT => 'preSubmit',
+                FormEvents::POST_SUBMIT => 'postSubmit'
         );
     }
     
-    public function preBind(FormEvent $event)
+    public function preSubmit(FormEvent $event)
     {
         $form = $event->getForm();
         $data = $form->getData();
         $this->oldData = $data ? $data->getData() : null;
     }
 
-    public function postBind(FormEvent $event)
+    public function postSubmit(FormEvent $event)
     {
         $form = $event->getForm();
         $media = $event->getData();
