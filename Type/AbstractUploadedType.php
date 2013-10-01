@@ -2,6 +2,8 @@
 
 namespace Ibrows\MediaBundle\Type;
 
+use Symfony\Component\Templating\Asset\PackageInterface;
+
 use Ibrows\MediaBundle\Model\MediaInterface;
 
 use Symfony\Component\HttpFoundation\File\File;
@@ -25,6 +27,11 @@ abstract class AbstractUploadedType extends AbstractMediaType
      * @var ContainerInterface
      */
     protected $container;
+
+    /**
+     * @var PackageInterface
+     */
+    protected $assetHelper;
     
     /**
      * @param ContainerInterface $container
@@ -34,6 +41,27 @@ abstract class AbstractUploadedType extends AbstractMediaType
     {
         $this->container = $container;
         return $this;
+    }
+    
+    /**
+     * @param PackageInterface $helper
+     * @return \Ibrows\MediaBundle\Type\AbstractUploadedType
+     */
+    public function setAssetHelper(PackageInterface $helper)
+    {
+        $this->assetHelper = $helper;
+        return $this;
+    }
+    
+    public function getAssetHelper()
+    {
+        if ($this->assetHelper) {
+            return $this->assetHelper;
+        }
+        
+        if ($this->container) {
+            return $this->container->get('templating.helper.assets');
+        }
     }
     
     /**
@@ -89,20 +117,24 @@ abstract class AbstractUploadedType extends AbstractMediaType
      */
     protected function postTransformData($file)
     {
-        return $file->getPathname();
+        return $file->getFilename();;
     }
     
     /**
-     * @param UploadedFile $file
-     * @return UploadedFile pointing to the new location
+     * @param File $file
+     * @return File pointing to the new location
      */
-    protected function moveToWeb(UploadedFile $file)
+    protected function moveToWeb(File $file)
     {
         $directory = $this->getWebDir();
         $filename = $this->getWebFilename($file);
         $newFile = $file->move($directory, $filename);
+        $originalFilename = $file->getFilename();
+        if ($file instanceof UploadedFile) {
+            $originalFilename = $file->getClientOriginalName();
+        }
         
-        return new UploadedFile($newFile->getPathname(), $file->getClientOriginalName());
+        return new UploadedFile($newFile->getPathname(), $originalFilename);
     }
     
     /**
@@ -118,8 +150,9 @@ abstract class AbstractUploadedType extends AbstractMediaType
         }
         
         $file = null;
-        if (file_exists($data)) {
-            $file = new File($data);
+        $path = $this->getAbsolutePath($data);
+        if (file_exists($path) && !is_dir($path)) {
+            $file = new File($path);
         }
         
         $media->setData($file);
@@ -187,8 +220,13 @@ abstract class AbstractUploadedType extends AbstractMediaType
      */
     protected function generateExtra($file)
     {
+        $filename = $file->getFilename();
+        if ($file instanceof UploadedFile) {
+            $filename = $file->getClientOriginalName();
+        }
+        
         $extra = array(
-                'originalFilename' => $file->getClientOriginalName()
+                'originalFilename' => $filename
         );
         
         return $extra;
@@ -201,17 +239,26 @@ abstract class AbstractUploadedType extends AbstractMediaType
     protected function getWebUrl(File $file)
     {
         $uri_prefix = substr($this->uri_prefix, 1);
-        $url = $this->container->get('templating.helper.assets')->getUrl(
+        $url = $this->getAssetHelper()->getUrl(
                 $uri_prefix.DIRECTORY_SEPARATOR.$file->getFilename()
         );
         return $url;
+    }
+    
+    protected function getAbsolutePath($filename)
+    {
+        return $this->upload_dir.DIRECTORY_SEPARATOR.$filename;
     }
     
     public function preUpdate(MediaInterface $media, array $changeSet)
     {
         $olddata = $changeSet['data'][0];
         $newdata = $changeSet['data'][1];
-        if ($olddata === $newdata->getPathname()) {
+        if (!$newdata instanceof File) {
+            return;
+        }
+        
+        if ($this->getAbsolutePath($olddata) === $newdata->getPathname()) {
             return;
         }
         
