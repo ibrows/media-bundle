@@ -37,14 +37,14 @@
             <argument>%ibrows_media.image.mime_types%</argument>
             <argument>%ibrows_media.image.formats%</argument>
             <call method="setContainer">
-		        <argument type="service" id="service_container" />
-		    </call>
-		    <call method="setUploadDir">
-		        <argument>%ibrows_media.upload_dir%</argument>
-		    </call>
-		    <call method="setUriPrefix">
-		        <argument>%ibrows_media.uri_prefix%</argument>
-		    </call>
+                <argument type="service" id="service_container" />
+            </call>
+            <call method="setUploadDir">
+                <argument>%ibrows_media.upload_dir%</argument>
+            </call>
+            <call method="setUriPrefix">
+                <argument>%ibrows_media.uri_prefix%</argument>
+            </call>
         </service>
         
         <service id="ibrows_media.type.file" class="Ibrows\MediaBundle\Type\UploadedFileType">
@@ -52,14 +52,14 @@
             <argument>%ibrows_media.file.max_size%</argument>
             <argument>%ibrows_media.file.mime_types%</argument>
             <call method="setContainer">
-		        <argument type="service" id="service_container" />
-		    </call>
-		    <call method="setUploadDir">
-		        <argument>%ibrows_media.upload_dir%</argument>
-		    </call>
-		    <call method="setUriPrefix">
-		        <argument>%ibrows_media.uri_prefix%</argument>
-		    </call>
+                <argument type="service" id="service_container" />
+            </call>
+            <call method="setUploadDir">
+                <argument>%ibrows_media.upload_dir%</argument>
+            </call>
+            <call method="setUriPrefix">
+                <argument>%ibrows_media.uri_prefix%</argument>
+            </call>
         </service>
         
         <service id="ibrows_media.type.youtube" class="Ibrows\MediaBundle\Type\YoutubeType">
