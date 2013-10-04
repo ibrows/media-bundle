@@ -16,7 +16,7 @@ Add the following lines in your composer.json:
 For composer to find the bundle, additionally you need to add the following to the repositories section in your composer.json
 ```
 "repositories": [
-	{
+    {
         "type": "vcs",
         "url": "git@codebasehq.com:ibrows/ibrowsch/ibrows-media-bundle.git"
     }
@@ -76,8 +76,8 @@ Now you can add the Media entity as a relation anywhere you want.
 ### Options
 ```
 ibrows_media:
-    uri_prefix: /uploads
-    upload_dir: %kernel.root_dir%/../web/uploads
+    upload_location: %kernel.root_dir%/../web
+    upload_root: /uploads
       
     enabled_types: [youtube, soundcloud, image, file]
     

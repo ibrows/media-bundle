@@ -17,11 +17,11 @@ abstract class AbstractUploadedType extends AbstractMediaType
     /**
      * @var string
      */
-    protected $upload_dir;
+    protected $upload_location;
     /**
      * @var string
      */
-    protected $uri_prefix;
+    protected $upload_root;
     
     /**
      * @var ContainerInterface
@@ -68,9 +68,9 @@ abstract class AbstractUploadedType extends AbstractMediaType
      * @param string $dir
      * @return \Ibrows\MediaBundle\Type\AbstractUploadedType
      */
-    public function setUploadDir($dir)
+    public function setUploadLocation($dir)
     {
-        $this->upload_dir = $dir.DIRECTORY_SEPARATOR.$this->getName();
+        $this->upload_location = $dir;
         return $this;
     }
     
@@ -78,9 +78,9 @@ abstract class AbstractUploadedType extends AbstractMediaType
      * @param string $prefix
      * @return \Ibrows\MediaBundle\Type\AbstractUploadedType
      */
-    public function setUriPrefix($prefix)
+    public function setUploadRoot($root)
     {
-        $this->uri_prefix = $prefix.DIRECTORY_SEPARATOR.$this->getName();
+        $this->upload_root = $root;
         return $this;
     }
     
@@ -108,7 +108,7 @@ abstract class AbstractUploadedType extends AbstractMediaType
             throw new FileNotFoundException($file);
         }
         
-        $newFile = $this->moveToWeb($file);
+        $newFile = $this->moveToUpload($file);
         return $newFile;
     }
 
@@ -124,10 +124,10 @@ abstract class AbstractUploadedType extends AbstractMediaType
      * @param File $file
      * @return File pointing to the new location
      */
-    protected function moveToWeb(File $file)
+    protected function moveToUpload(File $file)
     {
-        $directory = $this->getWebDir();
-        $filename = $this->getWebFilename($file);
+        $directory = $this->getAbsolutePath();
+        $filename = $this->getUploadFilename($file);
         $newFile = $file->move($directory, $filename);
         $originalFilename = $file->getFilename();
         if ($file instanceof UploadedFile) {
@@ -142,6 +142,8 @@ abstract class AbstractUploadedType extends AbstractMediaType
      */
     public function postLoad(MediaInterface $media)
     {
+        $this->media = $media;
+        
         $data = $media->getData();
         $extra = $media->getExtra();
         $originalFilename = '';
@@ -188,21 +190,24 @@ abstract class AbstractUploadedType extends AbstractMediaType
     /**
      * @return string
      */
-    protected function getWebDir()
+    protected function getUploadPath()
     {
-        $dir = $this->upload_dir;
-        if (!is_dir($dir)) {
-            mkdir($dir, 0777, true);
-        }
+        $dir = $this->upload_root.
+                DIRECTORY_SEPARATOR.$this->getUploadFolder();
         
         return $dir;
+    }
+    
+    protected function getUploadFolder()
+    {
+        return $this->getName();
     }
     
     /**
      * @param File $file
      * @return string
      */
-    protected function getWebFilename(File $file, $format = null)
+    protected function getUploadFilename(File $file, $format = null)
     {
         return uniqid(null, true);
     }
@@ -238,16 +243,23 @@ abstract class AbstractUploadedType extends AbstractMediaType
      */
     protected function getWebUrl(File $file)
     {
-        $uri_prefix = substr($this->uri_prefix, 1);
+        $root = $this->getUploadPath();
         $url = $this->getAssetHelper()->getUrl(
-                $uri_prefix.DIRECTORY_SEPARATOR.$file->getFilename()
+                $root.DIRECTORY_SEPARATOR.$file->getFilename()
         );
         return $url;
     }
     
-    protected function getAbsolutePath($filename)
+    protected function getAbsolutePath($filename = null)
     {
-        return $this->upload_dir.DIRECTORY_SEPARATOR.$filename;
+        $dir = $this->upload_location.
+                DIRECTORY_SEPARATOR.$this->getUploadPath();
+
+        if (!is_dir($dir)) {
+            mkdir($dir, 0777, true);
+        }
+        
+        return $dir.DIRECTORY_SEPARATOR.$filename;
     }
     
     public function preUpdate(MediaInterface $media, array $changeSet)

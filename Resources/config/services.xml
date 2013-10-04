@@ -39,11 +39,11 @@
             <call method="setContainer">
                 <argument type="service" id="service_container" />
             </call>
-            <call method="setUploadDir">
-                <argument>%ibrows_media.upload_dir%</argument>
+            <call method="setUploadLocation">
+                <argument>%ibrows_media.upload_location%</argument>
             </call>
-            <call method="setUriPrefix">
-                <argument>%ibrows_media.uri_prefix%</argument>
+            <call method="setUploadRoot">
+                <argument>%ibrows_media.upload_root%</argument>
             </call>
         </service>
         
@@ -54,11 +54,11 @@
             <call method="setContainer">
                 <argument type="service" id="service_container" />
             </call>
-            <call method="setUploadDir">
-                <argument>%ibrows_media.upload_dir%</argument>
+            <call method="setUploadLocation">
+                <argument>%ibrows_media.upload_location%</argument>
             </call>
-            <call method="setUriPrefix">
-                <argument>%ibrows_media.uri_prefix%</argument>
+            <call method="setUploadRoot">
+                <argument>%ibrows_media.upload_root%</argument>
             </call>
         </service>
         

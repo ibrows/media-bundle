@@ -32,8 +32,8 @@ class Configuration implements ConfigurationInterface
     {
         $node
             ->children()
-                ->scalarNode('upload_dir')->isRequired()->end()
-                ->scalarNode('uri_prefix')->isRequired()->end()
+                ->scalarNode('upload_location')->isRequired()->end()
+                ->scalarNode('upload_root')->isRequired()->end()
                 ->arrayNode('enabled_types')
                     ->useAttributeAsKey('name')
                     ->prototype('scalar')

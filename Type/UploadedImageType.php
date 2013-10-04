@@ -6,6 +6,7 @@ use Symfony\Component\Form\FormError;
 
 use Symfony\Component\HttpFoundation\File\Exception\FileNotFoundException;
 use Symfony\Component\HttpFoundation\File\File;
+use Ibrows\MediaBundle\Model\MediaInterface;
 
 class UploadedImageType extends AbstractUploadedType
 {
@@ -128,13 +129,33 @@ class UploadedImageType extends AbstractUploadedType
         if (is_array($extra)){
             foreach ($this->formats as $name => $format) { 
                 if (array_key_exists($name, $extra)) {
-                    $filename = $extra["{$name}_filename"];
-                    if (file_exists($filename)) {
-                        unlink($filename);
+                    $file = $extra["{$name}_file"];
+                    if (file_exists($file)) {
+                        unlink($file);
                     }
                 }
             }
         }
+    }
+    
+    public function postLoad(MediaInterface $media)
+    {
+        parent::postLoad($media);
+        
+        $extra = $media->getExtra();
+        if (is_array($extra)){
+            foreach ($this->formats as $name => $format) {
+                if (array_key_exists($name, $extra)) {
+                    $filekey = "{$name}_file";
+                    $filename = $extra[$filekey];
+                    $path = $this->getAbsolutePath($filename);
+                    if (file_exists($path)) {
+                        $extra[$filekey] = new File($path);
+                    }
+                }
+            }
+        }
+        $media->setExtra($extra);
     }
     
     /**
@@ -149,7 +170,7 @@ class UploadedImageType extends AbstractUploadedType
             
             $resizedFile = $this->resizeImage($file, $name, $width, $height);
             $extra = array_merge($extra, array(
-                    "{$name}_filename" => $resizedFile->getPathname(),
+                    "{$name}_file" => $resizedFile->getFilename(),
                     $name => $this->getWebUrl($resizedFile)
             ));
         }
@@ -166,7 +187,7 @@ class UploadedImageType extends AbstractUploadedType
      */
     protected function resizeImage(File $file, $format, $targetwidth, $targetheight)
     {
-        $targetfilename = $this->getWebDir($file).DIRECTORY_SEPARATOR.$this->getWebFilename($file, $format);
+        $targetfilename = $this->getAbsolutePath($this->getUploadFilename($file, $format));
 
         $img = new \Imagick($file->getPathname());
         $height = $img->getimageheight();
