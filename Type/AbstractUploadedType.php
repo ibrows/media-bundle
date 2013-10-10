@@ -117,7 +117,7 @@ abstract class AbstractUploadedType extends AbstractMediaType
      */
     protected function postTransformData($file)
     {
-        return $file->getFilename();;
+        return $file->getFilename();
     }
     
     /**
@@ -271,6 +271,7 @@ abstract class AbstractUploadedType extends AbstractMediaType
         }
         
         if ($this->getAbsolutePath($olddata) === $newdata->getPathname()) {
+            $media->setData($olddata);
             return;
         }
         
