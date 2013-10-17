@@ -270,11 +270,6 @@ abstract class AbstractUploadedType extends AbstractMediaType
             return;
         }
         
-        if ($this->getAbsolutePath($olddata) === $newdata->getPathname()) {
-            $media->setData($olddata);
-            return;
-        }
-        
         parent::preUpdate($media, $changeSet);
     }
 }
