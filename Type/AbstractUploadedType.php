@@ -168,7 +168,11 @@ abstract class AbstractUploadedType extends AbstractMediaType
         $file = $media->getData();
         $extra = $media->getExtra();
         
-        if(file_exists($file)){
+        if (!$file instanceof File) {
+            $file = $this->getAbsolutePath($file);
+        }
+        
+        if(file_exists($file) && !is_dir($file)){
             unlink($file);
         }
         
@@ -266,10 +270,14 @@ abstract class AbstractUploadedType extends AbstractMediaType
     {
         $olddata = $changeSet['data'][0];
         $newdata = $changeSet['data'][1];
-        if (!$newdata instanceof File) {
-            return;
+        
+        if ($newdata instanceof UploadedFile) {
+            return parent::preUpdate($media, $changeSet);
         }
         
-        parent::preUpdate($media, $changeSet);
+        if ($newdata instanceof File) {
+            // need to reset the data
+            $media->setData($olddata);
+        }
     }
 }
