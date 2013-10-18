@@ -43,7 +43,9 @@ interface MediaTypeInterface
      */
     public function postRemove(MediaInterface $media);
     /**
-     * Called in the Doctrine postLoad event
+     * Called in the Doctrine postLoad event. If you do load data (e.g. File)
+     * you also should make sure that the data is reverted to database save values
+     * before updating.
      *
      * @param MediaInterface $media
      */

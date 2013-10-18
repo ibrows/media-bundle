@@ -275,9 +275,22 @@ abstract class AbstractUploadedType extends AbstractMediaType
             return parent::preUpdate($media, $changeSet);
         }
         
+        $this->revertLoadData($media, $changeSet);
+        $this->revertLoadExtra($media, $changeSet);
+    }
+    
+    protected function revertLoadData(MediaInterface $media, $changeSet)
+    {
+        $olddata = $changeSet['data'][0];
+        $newdata = $changeSet['data'][1];
+        
         if ($newdata instanceof File) {
-            // need to reset the data
             $media->setData($olddata);
         }
+    }
+    
+    protected function revertLoadExtra(MediaInterface $media, $changeSet)
+    {
+        
     }
 }

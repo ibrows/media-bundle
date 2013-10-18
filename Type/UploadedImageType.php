@@ -158,6 +158,23 @@ class UploadedImageType extends AbstractUploadedType
         $media->setExtra($extra);
     }
     
+    protected function revertLoadExtra(MediaInterface $media, $changeSet)
+    {
+        $extra = $media->getExtra();
+        if (is_array($extra)){
+            foreach ($this->formats as $name => $format) {
+                if (array_key_exists($name, $extra)) {
+                    $filekey = "{$name}_file";
+                    $file = $extra[$filekey];
+                    if ($file instanceof File) {
+                        $extra[$filekey] = $file->getFilename();
+                    }
+                }
+            }
+        }
+        $media->setExtra($extra);
+    }
+    
     /**
      * {@inheritdoc}
      */
