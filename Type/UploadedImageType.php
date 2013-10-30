@@ -148,7 +148,8 @@ class UploadedImageType extends AbstractUploadedType
                 if (array_key_exists($name, $extra)) {
                     $filekey = "{$name}_file";
                     $filename = $extra[$filekey];
-                    $path = $this->getAbsolutePath($filename);
+                    $path = $this->upload_location.
+                            DIRECTORY_SEPARATOR.$extra[$name];
                     if (file_exists($path)) {
                         $extra[$filekey] = new File($path);
                     }

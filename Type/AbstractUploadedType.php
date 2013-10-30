@@ -152,7 +152,9 @@ abstract class AbstractUploadedType extends AbstractMediaType
         }
         
         $file = null;
-        $path = $this->getAbsolutePath($data);
+        $path = $this->upload_location.
+                DIRECTORY_SEPARATOR.$media->getUrl();
+        
         if (file_exists($path) && !is_dir($path)) {
             $file = new File($path);
         }
@@ -247,6 +249,7 @@ abstract class AbstractUploadedType extends AbstractMediaType
      */
     protected function getWebUrl(File $file)
     {
+        //TODO: remove dependency on assetHelper (use twig for that)
         $root = $this->getUploadPath();
         $url = $this->getAssetHelper()->getUrl(
                 $root.DIRECTORY_SEPARATOR.$file->getFilename()
