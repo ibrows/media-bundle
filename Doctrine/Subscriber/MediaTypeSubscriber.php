@@ -31,6 +31,7 @@ class MediaTypeSubscriber implements EventSubscriber
         return array(
                 Events::prePersist,
                 Events::preUpdate,
+                Events::preRemove,
                 Events::postRemove,
                 Events::postLoad
         );
@@ -86,6 +87,15 @@ class MediaTypeSubscriber implements EventSubscriber
             $mediaMeta = $em->getClassMetadata(get_class($media));
             $uow->recomputeSingleEntityChangeSet($mediaMeta, $media);
         }
+    }
+
+    /**
+     * Refresh the entity to get a filled proxy
+     * @param LifecycleEventArgs $args
+     */
+    public function preRemove(LifecycleEventArgs $args)
+    {
+        $args->getEntityManager()->refresh($args->getEntity());
     }
 
     /**
