@@ -60,14 +60,14 @@ class MediaTypeGuessSubscriber implements EventSubscriberInterface
         }
 
         $typeName = $config->getOption('type');
-        if ($typeName) {
-            $type = $this->manager->getType($typeName);
-            if (!$type->supports($value)) {
-                $type = null;
-            }
-        } else {
-            $type = $this->getBestMatchingType($value);
+        $types = array();
+        if (is_string($typeName)) {
+            $types = array($typeName);
         }
+        if (is_array($typeName)) {
+            $types = $typeName;
+        }
+        $type = $this->getBestMatchingType($value);
 
         if ($type) {
             $media->setType($type->getName());
@@ -77,9 +77,9 @@ class MediaTypeGuessSubscriber implements EventSubscriberInterface
         }
     }
 
-    protected function getBestMatchingType($value)
+    protected function getBestMatchingType($value, array $enabled = array())
     {
-        $types = $this->manager->getSupportingTypes($value);
+        $types = $this->manager->getSupportingTypes($value, $enabled);
         if (count($types)>1) {
             $type = $this->manager->guessBestSupportingType($value, $types);
         } else {

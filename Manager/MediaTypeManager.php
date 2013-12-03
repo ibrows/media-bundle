@@ -47,10 +47,14 @@ class MediaTypeManager
      * @param  unknown $value
      * @return array
      */
-    public function getSupportingTypes($value)
+    public function getSupportingTypes($value, array $enabled = array())
     {
         $supporting = array();
-        foreach ($this->enabled_types as $type) {
+        if (empty($enabled)) {
+            $enabled = $this->enabled_types;
+        }
+
+        foreach ($enabled as $type) {
             $confidence = (int) $type->supports($value);
             if ($confidence > 0) {
                 $supporting[$confidence] = $type;
