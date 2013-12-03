@@ -2,8 +2,6 @@
 
 namespace Ibrows\MediaBundle\Doctrine\Subscriber;
 
-use Ibrows\JaybooBundle\Entity\User;
-
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Doctrine\Common\EventSubscriber;
 use Doctrine\ORM\Event\LifecycleEventArgs;
@@ -90,12 +88,19 @@ class MediaTypeSubscriber implements EventSubscriber
     }
 
     /**
-     * Refresh the entity to get a filled proxy
+     * In order to make sure we always have a fully loaded entity
+     * in the postRemove event we need to refresh it
+     * 
      * @param LifecycleEventArgs $args
      */
     public function preRemove(LifecycleEventArgs $args)
     {
-        $args->getEntityManager()->refresh($args->getEntity());
+        $media = $this->getObject($args);
+        $em = $args->getEntityManager();
+        
+        if ($media instanceof MediaInterface) {
+            $em->refresh($args->getEntity());
+        }
     }
 
     /**
