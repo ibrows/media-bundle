@@ -2,8 +2,6 @@
 
 namespace Ibrows\MediaBundle\Doctrine\Subscriber;
 
-use Ibrows\JaybooBundle\Entity\User;
-
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Doctrine\Common\EventSubscriber;
 use Doctrine\ORM\Event\LifecycleEventArgs;
@@ -31,6 +29,7 @@ class MediaTypeSubscriber implements EventSubscriber
         return array(
                 Events::prePersist,
                 Events::preUpdate,
+                Events::preRemove,
                 Events::postRemove,
                 Events::postLoad
         );
@@ -85,6 +84,22 @@ class MediaTypeSubscriber implements EventSubscriber
             
             $mediaMeta = $em->getClassMetadata(get_class($media));
             $uow->recomputeSingleEntityChangeSet($mediaMeta, $media);
+        }
+    }
+
+    /**
+     * In order to make sure we always have a fully loaded entity
+     * in the postRemove event we need to refresh it
+     * 
+     * @param LifecycleEventArgs $args
+     */
+    public function preRemove(LifecycleEventArgs $args)
+    {
+        $media = $this->getObject($args);
+        $em = $args->getEntityManager();
+        
+        if ($media instanceof MediaInterface) {
+            $em->refresh($args->getEntity());
         }
     }
 
