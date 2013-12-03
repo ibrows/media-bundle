@@ -4,4 +4,4 @@ media:
     imageHeight: Das Bild ist zu Hoch. (Max %height% pixel)
     fileSize: Die Datei ist zu gross. (Max. %size% bytes)
   type:
-    unsupported: Dieser Mediatyp wird nicht unterstützt. 
+    unsupported: Dieser Mediatyp wird nicht unterstützt.

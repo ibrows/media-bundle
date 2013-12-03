@@ -12,34 +12,34 @@ class SoundcloudType extends AbstractMediaType
         return $this->isFullLink($data) ||
                     $this->isEmbeddLink($data);
     }
-    
+
     protected function isFullLink($data)
     {
         return strpos($data, 'soundcloud.com/') !== false;
     }
-    
+
     protected function isEmbeddLink($data)
     {
         return strpos($data, 'snd.sc/') !== false;
     }
-    
+
     protected function generateExtra($url)
     {
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, "http://soundcloud.com/oembed?format=json&url=$url");
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         $jsondata = curl_exec($ch);
-        
+
         $data = json_decode($jsondata, true);
-        
+
         return $data;
     }
-    
+
     protected function generateHtml($data, $extra)
     {
         return $extra['html'];
     }
-    
+
     public function getName()
     {
         return 'soundcloud';

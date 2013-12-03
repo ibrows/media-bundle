@@ -2,8 +2,6 @@
 
 namespace Ibrows\MediaBundle\Exception;
 
-use Ibrows\MediaBundle\Type\MediaTypeInterface;
-
 class TypeNotRegisteredException extends MediaException
 {
     /**

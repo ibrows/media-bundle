@@ -30,19 +30,19 @@ class UploadedImageType extends AbstractUploadedType
      * @var array
      */
     protected $mimeTypes;
-    
+
     public function __construct($max_width, $max_height, $max_size, array $mime_types, array $formats)
     {
         $this->maxWidth =  $max_width;
         $this->maxHeight = $max_height;
         $this->maxSize = $max_size;
-        
+
         $this->mimeTypes = $mime_types;
         $this->formats = $formats;
     }
-    
+
     /**
-     * @param File $file
+     * @param  File    $file
      * @return boolean
      */
     protected function supportsMimeType(File $file)
@@ -53,10 +53,10 @@ class UploadedImageType extends AbstractUploadedType
             // this might happen if upload_max_filesize is set too small
             throw new \Exception('File could not be uploaded. Did you set the upload_max_filesize too small?');
         }
-    
+
         return array_search($mime, $this->mimeTypes) !== false;
     }
-    
+
     /**
      * {@inheritdoc}
      */
@@ -67,16 +67,16 @@ class UploadedImageType extends AbstractUploadedType
         if ($fileSizeError) {
             return $fileSizeError;
         }
-        
+
         $imgSizeError = $this->validateImgSize($file);
         if ($imgSizeError) {
             return $imgSizeError;
         }
     }
-    
+
     /**
-     * 
-     * @param File $file
+     *
+     * @param  File        $file
      * @return void|string
      */
     protected function validateFileSize(File $file)
@@ -84,18 +84,18 @@ class UploadedImageType extends AbstractUploadedType
         if (!$this->maxSize) {
             return;
         }
-        
+
         $fileSize = $file->getSize();
         if ($fileSize > $this->maxSize) {
             return new FormError(null, 'media.error.fileSize', array(
-                    '%size%' => $this->maxSize
+                '%size%' => $this->maxSize
             ));
         }
     }
 
     /**
-     * 
-     * @param File $file
+     *
+     * @param  File        $file
      * @return void|string
      */
     protected function validateImgSize(File $file)
@@ -103,31 +103,31 @@ class UploadedImageType extends AbstractUploadedType
         if (!$this->maxHeight && !$this->maxWidth) {
             return;
         }
-        
+
         $img = new \Imagick($file->getPathname());
         $height = $img->getimageheight();
         $width = $img->getimagewidth();
-        
+
         if ($this->maxHeight && $height > $this->maxHeight) {
             return new FormError(null, 'media.error.imageHeight', array(
-                    '%height%' => $this->maxHeight
+                '%height%' => $this->maxHeight
             ));
         }
-        
+
         if ($this->maxWidth && $width > $this->maxWidth) {
             return new FormError(null, 'media.error.imageWidth', array(
-                    '%width%' => $this->maxWidth
+                '%width%' => $this->maxWidth
             ));
         }
     }
-    
+
     /**
      * {@inheritdoc}
      */
     protected function postRemoveExtra($extra)
     {
-        if (is_array($extra)){
-            foreach ($this->formats as $name => $format) { 
+        if (is_array($extra)) {
+            foreach ($this->formats as $name => $format) {
                 if (array_key_exists($name, $extra)) {
                     $file = $extra["{$name}_file"];
                     if (file_exists($file)) {
@@ -137,13 +137,13 @@ class UploadedImageType extends AbstractUploadedType
             }
         }
     }
-    
+
     public function postLoad(MediaInterface $media)
     {
         parent::postLoad($media);
-        
+
         $extra = $media->getExtra();
-        if (is_array($extra)){
+        if (is_array($extra)) {
             foreach ($this->formats as $name => $format) {
                 if (array_key_exists($name, $extra)) {
                     $filekey = "{$name}_file";
@@ -158,11 +158,11 @@ class UploadedImageType extends AbstractUploadedType
         }
         $media->setExtra($extra);
     }
-    
+
     protected function revertLoadExtra(MediaInterface $media, $changeSet)
     {
         $extra = $media->getExtra();
-        if (is_array($extra)){
+        if (is_array($extra)) {
             foreach ($this->formats as $name => $format) {
                 if (array_key_exists($name, $extra)) {
                     $filekey = "{$name}_file";
@@ -175,7 +175,7 @@ class UploadedImageType extends AbstractUploadedType
         }
         $media->setExtra($extra);
     }
-    
+
     /**
      * {@inheritdoc}
      */
@@ -185,22 +185,22 @@ class UploadedImageType extends AbstractUploadedType
         foreach ($this->formats as $name => $format) {
             $width = array_key_exists('width', $format) ? $format['width'] : null;
             $height = array_key_exists('height', $format) ? $format['height'] : null;
-            
+
             $resizedFile = $this->resizeImage($file, $name, $width, $height);
             $extra = array_merge($extra, array(
-                    "{$name}_file" => $resizedFile->getFilename(),
-                    $name => $this->getWebUrl($resizedFile)
+                "{$name}_file" => $resizedFile->getFilename(),
+                $name => $this->getWebUrl($resizedFile)
             ));
         }
-        
+
         return $extra;
     }
-    
+
     /**
      * @param \Symfony\Component\HttpFoundation\File\File $file
-     * @param number|null $targetwidth
-     * @param number|null $targetheight
-     * 
+     * @param number|null                                 $targetwidth
+     * @param number|null                                 $targetheight
+     *
      * @return \Symfony\Component\HttpFoundation\File\File
      */
     protected function resizeImage(File $file, $format, $targetwidth, $targetheight)
@@ -217,13 +217,13 @@ class UploadedImageType extends AbstractUploadedType
         if (!$targetwidth) {
             $targetwidth = intval($targetheight / $factor);
         }
-        
+
         $img->cropthumbnailimage($targetwidth, $targetheight);
         $img->writeimage($targetfilename);
-        
+
         return new File($targetfilename);
     }
-    
+
     public function getName()
     {
         return 'image';

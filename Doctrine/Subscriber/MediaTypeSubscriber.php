@@ -2,7 +2,6 @@
 
 namespace Ibrows\MediaBundle\Doctrine\Subscriber;
 
-use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Doctrine\Common\EventSubscriber;
 use Doctrine\ORM\Event\LifecycleEventArgs;
 use Doctrine\ORM\Event\PreUpdateEventArgs;
@@ -10,7 +9,6 @@ use Doctrine\ORM\Events;
 
 use Ibrows\MediaBundle\Manager\MediaTypeManager;
 use Ibrows\MediaBundle\Model\MediaInterface;
-use Ibrows\MediaBundle\Type\MediaTypeInterface;
 
 class MediaTypeSubscriber implements EventSubscriber
 {
@@ -27,23 +25,23 @@ class MediaTypeSubscriber implements EventSubscriber
     public function getSubscribedEvents()
     {
         return array(
-                Events::prePersist,
-                Events::preUpdate,
-                Events::preRemove,
-                Events::postRemove,
-                Events::postLoad
+            Events::prePersist,
+            Events::preUpdate,
+            Events::preRemove,
+            Events::postRemove,
+            Events::postLoad
         );
     }
-    
+
     /**
      * Post load
-     * 
+     *
      * @param LifecycleEventArgs $args
      */
     public function postLoad(LifecycleEventArgs $args)
     {
         $media = $this->getObject($args);
-        
+
         if ($media instanceof MediaInterface) {
             $type = $this->manager->getType($media->getType());
             $type->postLoad($media);
@@ -59,16 +57,16 @@ class MediaTypeSubscriber implements EventSubscriber
     {
         $media = $this->getObject($args);
         $em = $args->getEntityManager();
-        
+
         if ($media instanceof MediaInterface) {
             $type = $this->manager->getType($media->getType());
             $type->prePersist($media);
         }
     }
-    
+
     /**
      * Transform the media files
-     * 
+     *
      * @param PreUpdateEventArgs $args
      */
     public function preUpdate(PreUpdateEventArgs $args)
@@ -77,11 +75,11 @@ class MediaTypeSubscriber implements EventSubscriber
         $em = $args->getEntityManager();
         /* @var $em \Doctrine\ORM\EntityManager */
         $uow = $em->getUnitOfWork();
-        
+
         if ($media instanceof MediaInterface && $args->hasChangedField('data')) {
             $type = $this->manager->getType($media->getType());
             $type->preUpdate($media, $args->getEntityChangeSet());
-            
+
             $mediaMeta = $em->getClassMetadata(get_class($media));
             $uow->recomputeSingleEntityChangeSet($mediaMeta, $media);
         }
@@ -90,14 +88,14 @@ class MediaTypeSubscriber implements EventSubscriber
     /**
      * In order to make sure we always have a fully loaded entity
      * in the postRemove event we need to refresh it
-     * 
+     *
      * @param LifecycleEventArgs $args
      */
     public function preRemove(LifecycleEventArgs $args)
     {
         $media = $this->getObject($args);
         $em = $args->getEntityManager();
-        
+
         if ($media instanceof MediaInterface) {
             $em->refresh($this->getObject($args));
         }
@@ -111,15 +109,15 @@ class MediaTypeSubscriber implements EventSubscriber
     public function postRemove(LifecycleEventArgs $args)
     {
         $media = $this->getObject($args);
-        
+
         if ($media instanceof MediaInterface) {
             $type = $this->manager->getType($media->getType());
             $type->postRemove($media);
         }
     }
-    
+
     /**
-     * @param LifecycleEventArgs $args
+     * @param  LifecycleEventArgs $args
      * @return mixed
      */
     protected function getObject(LifecycleEventArgs $args)

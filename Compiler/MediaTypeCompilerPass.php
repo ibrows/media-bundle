@@ -11,19 +11,19 @@ class MediaTypeCompilerPass implements CompilerPassInterface
 {
     public function process(ContainerBuilder $container)
     {
-        if(!$container->hasDefinition('ibrows_media.type.manager')) {
+        if (!$container->hasDefinition('ibrows_media.type.manager')) {
             return;
         }
-        
+
         $definition = $container->getDefinition(
                 'ibrows_media.type.manager'
         );
-        
+
         $taggedServices = $container->findTaggedServiceIds(
                 'ibrows_media.type'
         );
-        
-        foreach($taggedServices as $id => $attributes){
+
+        foreach ($taggedServices as $id => $attributes) {
             $definition->addMethodCall(
                     'addMediaType',
                     array($id, new Reference($id))

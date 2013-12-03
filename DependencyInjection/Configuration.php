@@ -27,7 +27,7 @@ class Configuration implements ConfigurationInterface
 
         return $treeBuilder;
     }
-    
+
     protected function addMediaSection(ArrayNodeDefinition $node)
     {
         $node
@@ -41,7 +41,7 @@ class Configuration implements ConfigurationInterface
             ->end()
         ;
     }
-    
+
     protected function addUploadedImageSection(ArrayNodeDefinition $node)
     {
         $node
@@ -71,7 +71,7 @@ class Configuration implements ConfigurationInterface
             ->end()
         ;
     }
-    
+
     protected function addUploadedFileSection(ArrayNodeDefinition $node)
     {
         $node

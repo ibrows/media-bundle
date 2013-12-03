@@ -21,21 +21,21 @@ class IbrowsMediaExtension extends Extension
     {
         $configuration = new Configuration();
         $config = $this->processConfiguration($configuration, $configs);
-        
+
         $loader = new Loader\XmlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
         $loader->load('services.xml');
-        
+
         $this->registerContainerParametersRecursive($container, $this->getAlias(), $config);
     }
-    
+
     protected function registerContainerParametersRecursive(ContainerBuilder $container, $alias, $config)
     {
         $iterator = new \RecursiveIteratorIterator(new \RecursiveArrayIterator($config),
                 \RecursiveIteratorIterator::SELF_FIRST);
-    
-        foreach($iterator as $value){
+
+        foreach ($iterator as $value) {
             $path = array( );
-            for($i = 0; $i <= $iterator->getDepth(); $i++){
+            for ($i = 0; $i <= $iterator->getDepth(); $i++) {
                 $path[] = $iterator->getSubIterator($i)->key();
             }
             $key = $alias . '.' . implode(".", $path);

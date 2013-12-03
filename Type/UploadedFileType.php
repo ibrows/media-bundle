@@ -16,24 +16,24 @@ class UploadedFileType extends AbstractUploadedType
      * @var array
      */
     protected $mimeTypes;
-    
+
     public function __construct($max_size, array $mime_types)
     {
         $this->maxSize = $max_size;
         $this->mimeTypes = $mime_types;
     }
-    
+
     /**
-     * @param File $file
+     * @param  File    $file
      * @return boolean
      */
     protected function supportsMimeType(File $file)
     {
         $mime = $file->getMimeType();
-    
+
         return array_search($mime, $this->mimeTypes) !== false;
     }
-    
+
     /**
      * {@inheritdoc}
      */
@@ -45,10 +45,10 @@ class UploadedFileType extends AbstractUploadedType
             return $fileSizeError;
         }
     }
-    
+
     /**
      *
-     * @param File $file
+     * @param  File        $file
      * @return void|string
      */
     protected function validateFileSize(File $file)
@@ -56,15 +56,15 @@ class UploadedFileType extends AbstractUploadedType
         if (!$this->maxSize) {
             return;
         }
-    
+
         $fileSize = $file->getSize();
         if ($fileSize > $this->maxSize) {
             return new FormError(null, 'media.error.fileSize', array(
-                    '%size%' => $this->maxSize
+                '%size%' => $this->maxSize
             ));
         }
     }
-    
+
     public function getName()
     {
         return 'file';

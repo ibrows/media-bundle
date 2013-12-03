@@ -9,7 +9,7 @@ interface MediaInterface
      */
     public function getType();
     /**
-     * 
+     *
      * @param string $type
      */
     public function setType($type);
@@ -18,7 +18,7 @@ interface MediaInterface
      */
     public function getData();
     /**
-     * 
+     *
      * @param mixed $data
      */
     public function setData($data);
@@ -36,7 +36,7 @@ interface MediaInterface
      */
     public function getUrl();
     /**
-     * 
+     *
      * @param string $url
      */
     public function setUrl($url);
@@ -45,7 +45,7 @@ interface MediaInterface
      */
     public function getHtml();
     /**
-     * 
+     *
      * @param string $html
      */
     public function setHtml($html);

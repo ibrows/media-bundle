@@ -22,7 +22,7 @@ abstract class AbstractUploadedType extends AbstractMediaType
      * @var string
      */
     protected $upload_root;
-    
+
     /**
      * @var ContainerInterface
      */
@@ -32,58 +32,62 @@ abstract class AbstractUploadedType extends AbstractMediaType
      * @var PackageInterface
      */
     protected $assetHelper;
-    
+
     /**
-     * @param ContainerInterface $container
+     * @param  ContainerInterface                            $container
      * @return \Ibrows\MediaBundle\Type\AbstractUploadedType
      */
     public function setContainer(ContainerInterface $container)
     {
         $this->container = $container;
+
         return $this;
     }
-    
+
     /**
-     * @param PackageInterface $helper
+     * @param  PackageInterface                              $helper
      * @return \Ibrows\MediaBundle\Type\AbstractUploadedType
      */
     public function setAssetHelper(PackageInterface $helper)
     {
         $this->assetHelper = $helper;
+
         return $this;
     }
-    
+
     public function getAssetHelper()
     {
         if ($this->assetHelper) {
             return $this->assetHelper;
         }
-        
+
         if ($this->container) {
             return $this->container->get('templating.helper.assets');
         }
     }
-    
+
     /**
-     * @param string $dir
+     * @param  string                                        $dir
      * @return \Ibrows\MediaBundle\Type\AbstractUploadedType
      */
     public function setUploadLocation($dir)
     {
         $this->upload_location = $dir;
+
         return $this;
     }
-    
+
     /**
-     * @param string $prefix
+     * @param  string                                        $prefix
      * @return \Ibrows\MediaBundle\Type\AbstractUploadedType
      */
     public function setUploadRoot($root)
     {
         $this->upload_root = $root;
+
         return $this;
     }
-    
+
     /**
      * @param string $link
      */
@@ -92,23 +96,24 @@ abstract class AbstractUploadedType extends AbstractMediaType
         return  $file instanceof File &&
                     $this->supportsMimeType($file);
     }
-    
+
     /**
-     * @param File $file
+     * @param  File    $file
      * @return boolean
      */
     abstract protected function supportsMimeType(File $file);
-    
+
     /**
      * {@inheritdoc}
      */
     protected function preTransformData($file)
     {
-        if(!file_exists($file)){
+        if (!file_exists($file)) {
             throw new FileNotFoundException($file);
         }
-        
+
         $newFile = $this->moveToUpload($file);
+
         return $newFile;
     }
 
@@ -119,9 +124,9 @@ abstract class AbstractUploadedType extends AbstractMediaType
     {
         return $file->getFilename();
     }
-    
+
     /**
-     * @param File $file
+     * @param  File $file
      * @return File pointing to the new location
      */
     protected function moveToUpload(File $file)
@@ -133,35 +138,35 @@ abstract class AbstractUploadedType extends AbstractMediaType
         if ($file instanceof UploadedFile) {
             $originalFilename = $file->getClientOriginalName();
         }
-        
+
         return new UploadedFile($newFile->getPathname(), $originalFilename);
     }
-    
+
     /**
      * {@inheritdoc}
      */
     public function postLoad(MediaInterface $media)
     {
         $this->media = $media;
-        
+
         $data = $media->getData();
         $extra = $media->getExtra();
         $originalFilename = '';
         if (array_key_exists('originalFilename', $extra)) {
             $originalFilename = $extra['originalFilename'];
         }
-        
+
         $file = null;
         $path = $this->upload_location.
                 DIRECTORY_SEPARATOR.$media->getUrl();
-        
+
         if (file_exists($path) && !is_dir($path)) {
             $file = new File($path);
         }
-        
+
         $media->setData($file);
     }
-    
+
     /**
      * {@inheritdoc}
      */
@@ -169,16 +174,16 @@ abstract class AbstractUploadedType extends AbstractMediaType
     {
         $file = $media->getData();
         $extra = $media->getExtra();
-        
+
         if (!$file instanceof File) {
             $file = $this->getAbsolutePath($file);
         }
-        
-        if(file_exists($file) && !is_dir($file)){
+
+        if (file_exists($file) && !is_dir($file)) {
             unlink($file);
         }
-        
-        if ($extra){
+
+        if ($extra) {
             $this->postRemoveExtra($extra);
         }
     }
@@ -186,13 +191,13 @@ abstract class AbstractUploadedType extends AbstractMediaType
     /**
      * Overwrite this method in order to clean up the additional
      * data created in generateExtra
-     * 
+     *
      * @param unknown $extra
      */
     protected function postRemoveExtra($extra)
     {
     }
-     
+
     /**
      * @return string
      */
@@ -200,24 +205,24 @@ abstract class AbstractUploadedType extends AbstractMediaType
     {
         $dir = $this->upload_root.
                 DIRECTORY_SEPARATOR.$this->getUploadFolder();
-        
+
         return $dir;
     }
-    
+
     protected function getUploadFolder()
     {
         return $this->getName();
     }
-    
+
     /**
-     * @param File $file
+     * @param  File   $file
      * @return string
      */
     protected function getUploadFilename(File $file, $format = null)
     {
         return uniqid(null, true);
     }
-    
+
     /**
      * {@inheritdoc}
      */
@@ -225,7 +230,7 @@ abstract class AbstractUploadedType extends AbstractMediaType
     {
         return $this->getWebUrl($file);
     }
-    
+
     /**
      * {@inheritdoc}
      */
@@ -235,65 +240,66 @@ abstract class AbstractUploadedType extends AbstractMediaType
         if ($file instanceof UploadedFile) {
             $filename = $file->getClientOriginalName();
         }
-        
+
         $extra = array(
-                'originalFilename' => $filename
+            'originalFilename' => $filename
         );
-        
+
         return $extra;
     }
-    
+
     /**
-     * @param File $file
-     * @return the web url of the file
+     * @param  File $file
+     * @return the  web url of the file
      */
     protected function getWebUrl(File $file)
     {
         //TODO: remove dependency on assetHelper (use twig for that)
         $root = $this->getUploadPath();
         $url = $this->getAssetHelper()->getUrl(
-                $root.DIRECTORY_SEPARATOR.$file->getFilename()
+            $root.DIRECTORY_SEPARATOR.$file->getFilename()
         );
+
         return $url;
     }
-    
+
     protected function getAbsolutePath($filename = null)
     {
         $dir = $this->upload_location.
-                DIRECTORY_SEPARATOR.$this->getUploadPath();
+            DIRECTORY_SEPARATOR.$this->getUploadPath();
 
         if (!is_dir($dir)) {
             mkdir($dir, 0777, true);
         }
-        
+
         return $dir.DIRECTORY_SEPARATOR.$filename;
     }
-    
+
     public function preUpdate(MediaInterface $media, array $changeSet)
     {
         $olddata = $changeSet['data'][0];
         $newdata = $changeSet['data'][1];
-        
+
         if ($newdata instanceof UploadedFile) {
             return parent::preUpdate($media, $changeSet);
         }
-        
+
         $this->revertLoadData($media, $changeSet);
         $this->revertLoadExtra($media, $changeSet);
     }
-    
+
     protected function revertLoadData(MediaInterface $media, $changeSet)
     {
         $olddata = $changeSet['data'][0];
         $newdata = $changeSet['data'][1];
-        
+
         if ($newdata instanceof File) {
             $media->setData($olddata);
         }
     }
-    
+
     protected function revertLoadExtra(MediaInterface $media, $changeSet)
     {
-        
+
     }
 }
