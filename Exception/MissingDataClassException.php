@@ -4,7 +4,7 @@ namespace Ibrows\MediaBundle\Exception;
 
 use Symfony\Component\Form\FormInterface;
 
-class MissingDataClassException extends \Exception
+class MissingDataClassException extends MediaException
 {
     /**
      * @param string $message

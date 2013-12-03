@@ -4,7 +4,7 @@ namespace Ibrows\MediaBundle\Exception;
 
 use Ibrows\MediaBundle\Type\MediaTypeInterface;
 
-class TypeAlreadyRegisteredException extends \Exception
+class TypeAlreadyRegisteredException extends MediaException
 {
     /**
      * @param string $message

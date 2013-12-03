@@ -5,6 +5,7 @@ namespace Ibrows\MediaBundle\Manager;
 use Ibrows\MediaBundle\Exception\TypeAlreadyRegisteredException;
 
 use Ibrows\MediaBundle\Type\MediaTypeInterface;
+use Ibrows\MediaBundle\Exception\TypeNotRegisteredException;
 
 class MediaTypeManager
 {
@@ -69,7 +70,9 @@ class MediaTypeManager
     
     public function getType($type)
     {
-        //TODO: error checking
+        if (!array_key_exists($type, $this->registered_types)) {
+            throw new TypeNotRegisteredException($type);
+        }
         return $this->registered_types[$type];
     }
 }
