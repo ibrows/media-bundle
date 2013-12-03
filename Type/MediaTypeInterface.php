@@ -11,8 +11,13 @@ interface MediaTypeInterface
      * This function is called in the postbind event of the form in order
      * to find all supporting types for the given data.
      * 
+     * The returned value represents the confidence in supporting the data.
+     * The higher the returned integer, the better the confidence. All
+     * internal types return confidence of boolean true, which evaluates to 
+     * integer 1.
+     * 
      * @param mixed $data the submitted form data
-     * @return boolean
+     * @return boolean|integer the confidence 
      */
     public function supports($data);
     /**

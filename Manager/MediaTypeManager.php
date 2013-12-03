@@ -49,8 +49,9 @@ class MediaTypeManager
     public function getSupportingTypes($value) {
         $supporting = array();
         foreach ($this->enabled_types as $type) {
-            if ($type->supports($value)) {
-                $supporting[] = $type;
+            $confidence = (int) $type->supports($value);
+            if ($confidence > 0) {
+                $supporting[$confidence] = $type;
             }
         }
         
@@ -63,9 +64,11 @@ class MediaTypeManager
      * @param array $types
      * @return AbstractMediaType
      */
-    public function guessBestSupportingType($value, array $types = null)
+    public function guessBestSupportingType($value, array $types = array())
     {
-        //TODO:
+        ksort($types);
+        
+        return end($sorted);
     }
     
     public function getType($type)
