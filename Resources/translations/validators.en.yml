@@ -3,3 +3,5 @@ media:
     imageWidth: The picture is too wide. (Max %width% pixel)
     imageHeight: The picture is too tall. (Max %height% pixel)
     fileSize: The file is too big. (Max. %size% bytes)
+  type:
+    unsupported: This type of media is not supported.
