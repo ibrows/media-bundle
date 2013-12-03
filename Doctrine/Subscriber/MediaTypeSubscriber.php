@@ -99,7 +99,7 @@ class MediaTypeSubscriber implements EventSubscriber
         $em = $args->getEntityManager();
         
         if ($media instanceof MediaInterface) {
-            $em->refresh($args->getEntity());
+            $em->refresh($this->getObject($args));
         }
     }
 
