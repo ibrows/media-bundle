@@ -1,0 +1,5 @@
+media:
+  error:
+    imageWidth: Das Bild ist zu Breit. (Max %width% pixel)
+    imageHeight: Das Bild ist zu Hoch. (Max %height% pixel)
+    fileSize: Die Datei ist zu gross. (Max. %size% bytes)
