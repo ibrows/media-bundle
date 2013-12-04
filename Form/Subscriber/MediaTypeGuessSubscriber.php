@@ -67,7 +67,7 @@ class MediaTypeGuessSubscriber implements EventSubscriberInterface
         if (is_array($typeName)) {
             $types = $typeName;
         }
-        $type = $this->getBestMatchingType($value);
+        $type = $this->getBestMatchingType($value, $types);
 
         if ($type) {
             $media->setType($type->getName());

@@ -55,9 +55,10 @@ class MediaTypeManager
         }
 
         foreach ($enabled as $type) {
-            $confidence = (int) $type->supports($value);
+        	$mediaType = $this->getType($type);
+            $confidence = (int) $mediaType->supports($value);
             if ($confidence > 0) {
-                $supporting[$confidence] = $type;
+                $supporting[$confidence] = $mediaType;
             }
         }
 
