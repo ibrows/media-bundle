@@ -11,6 +11,7 @@ use Symfony\Component\Translation\TranslatorInterface;
 use Symfony\Component\Form\FormEvents;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormError;
+use Symfony\Component\HttpFoundation\File\Exception\FileNotFoundException;
 
 class MediaTypeGuessSubscriber implements EventSubscriberInterface
 {
@@ -67,7 +68,12 @@ class MediaTypeGuessSubscriber implements EventSubscriberInterface
         if (is_array($typeName)) {
             $types = $typeName;
         }
-        $type = $this->getBestMatchingType($value, $types);
+        try {
+            $type = $this->getBestMatchingType($value, $types);
+        } catch (FileNotFoundException $e) {
+            $this->addFormError($form, 'media.error.unknown');
+            return;
+        }
 
         if ($type) {
             $media->setType($type->getName());
