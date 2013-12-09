@@ -29,6 +29,8 @@ class MediaTypeSubscriber implements EventSubscriber
             Events::preUpdate,
             Events::preRemove,
             Events::postRemove,
+            Events::postUpdate,
+            Events::postPersist,
             Events::postLoad
         );
     }
@@ -45,6 +47,36 @@ class MediaTypeSubscriber implements EventSubscriber
         if ($media instanceof MediaInterface) {
             $type = $this->manager->getType($media->getType());
             $type->postLoad($media);
+        }
+    }
+
+    /**
+     * Post Update
+     *
+     * @param LifecycleEventArgs $args
+     */
+    public function postUpdate(LifecycleEventArgs $args)
+    {
+        $media = $this->getObject($args);
+    
+        if ($media instanceof MediaInterface) {
+            $type = $this->manager->getType($media->getType());
+            $type->postUpdate($media);
+        }
+    }
+
+    /**
+     * Post Persist
+     *
+     * @param LifecycleEventArgs $args
+     */
+    public function postPersist(LifecycleEventArgs $args)
+    {
+        $media = $this->getObject($args);
+    
+        if ($media instanceof MediaInterface) {
+            $type = $this->manager->getType($media->getType());
+            $type->postPersist($media);
         }
     }
 

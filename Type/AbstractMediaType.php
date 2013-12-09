@@ -73,6 +73,16 @@ abstract class AbstractMediaType implements MediaTypeInterface
     {
     }
 
+    public function postUpdate(MediaInterface $media)
+    {
+        return $this->postLoad($media);
+    }
+
+    public function postPersist(MediaInterface $media)
+    {
+        return $this->postLoad($media);
+    }
+
     public function postLoad(MediaInterface $media)
     {
     }
