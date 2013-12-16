@@ -3,6 +3,6 @@ media:
     unknown: An unknown error occured. The file might be to large.
     imageWidth: The picture is too wide. (Max %width% pixel)
     imageHeight: The picture is too tall. (Max %height% pixel)
-    fileSize: The file is too big. (Max. %size% bytes)
+    fileSize: The file is too big. (Max. %size% kB)
   type:
     unsupported: This type of media is not supported.

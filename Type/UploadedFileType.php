@@ -58,9 +58,9 @@ class UploadedFileType extends AbstractUploadedType
         }
 
         $fileSize = $file->getSize();
-        if ($fileSize > $this->maxSize) {
+        if ($fileSize > $this->maxSize*1000) {
             return new FormError(null, 'media.error.fileSize', array(
-                '%size%' => $this->maxSize
+                '%size%' => number_format($this->maxSize, 0, '.', "'")
             ));
         }
     }
