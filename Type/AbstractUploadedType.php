@@ -24,49 +24,6 @@ abstract class AbstractUploadedType extends AbstractMediaType
     protected $upload_root;
 
     /**
-     * @var ContainerInterface
-     */
-    protected $container;
-
-    /**
-     * @var PackageInterface
-     */
-    protected $assetHelper;
-
-    /**
-     * @param  ContainerInterface                            $container
-     * @return \Ibrows\MediaBundle\Type\AbstractUploadedType
-     */
-    public function setContainer(ContainerInterface $container)
-    {
-        $this->container = $container;
-
-        return $this;
-    }
-
-    /**
-     * @param  PackageInterface                              $helper
-     * @return \Ibrows\MediaBundle\Type\AbstractUploadedType
-     */
-    public function setAssetHelper(PackageInterface $helper)
-    {
-        $this->assetHelper = $helper;
-
-        return $this;
-    }
-
-    public function getAssetHelper()
-    {
-        if ($this->assetHelper) {
-            return $this->assetHelper;
-        }
-
-        if ($this->container) {
-            return $this->container->get('templating.helper.assets');
-        }
-    }
-
-    /**
      * @param  string                                        $dir
      * @return \Ibrows\MediaBundle\Type\AbstractUploadedType
      */
@@ -206,6 +163,9 @@ abstract class AbstractUploadedType extends AbstractMediaType
         $dir = $this->upload_root.
                 DIRECTORY_SEPARATOR.$this->getUploadFolder();
 
+        if ($dir[0] === DIRECTORY_SEPARATOR) {
+            $dir = substr($dir, 1);
+        }
         return $dir;
     }
 
@@ -254,11 +214,8 @@ abstract class AbstractUploadedType extends AbstractMediaType
      */
     protected function getWebUrl(File $file)
     {
-        //TODO: remove dependency on assetHelper (use twig for that)
         $root = $this->getUploadPath();
-        $url = $this->getAssetHelper()->getUrl(
-            $root.DIRECTORY_SEPARATOR.$file->getFilename()
-        );
+        $url = $root.DIRECTORY_SEPARATOR.$file->getFilename();
 
         return $url;
     }

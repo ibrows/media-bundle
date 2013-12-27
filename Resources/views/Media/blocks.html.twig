@@ -13,12 +13,12 @@
 {% block image %}
 {% set source = params.format is defined ? media.extra[params.format] : media.url %}
 <div class="media image">
-    <img src="{{ source }}" alt="" />
+    <img src="{{ asset(source) }}" alt="" />
 </div>
 {% endblock %}
 
 {% block file %}
 <div class="media file">
-    <a href="{{ media.url }}">{{ media.extra.originalFilename }}</a>
+    <a href="{{ asset(media.url) }}">{{ media.extra.originalFilename }}</a>
 </div>
 {% endblock %}

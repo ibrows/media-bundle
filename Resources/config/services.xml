@@ -42,9 +42,6 @@
             <argument>%ibrows_media.image.max_size%</argument>
             <argument>%ibrows_media.image.mime_types%</argument>
             <argument>%ibrows_media.image.formats%</argument>
-            <call method="setContainer">
-                <argument type="service" id="service_container" />
-            </call>
             <call method="setUploadLocation">
                 <argument>%ibrows_media.upload_location%</argument>
             </call>
@@ -57,9 +54,6 @@
             <tag name="ibrows_media.type" alias="ibrows_media_uploadedfile" />
             <argument>%ibrows_media.file.max_size%</argument>
             <argument>%ibrows_media.file.mime_types%</argument>
-            <call method="setContainer">
-                <argument type="service" id="service_container" />
-            </call>
             <call method="setUploadLocation">
                 <argument>%ibrows_media.upload_location%</argument>
             </call>
