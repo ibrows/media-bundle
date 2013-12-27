@@ -42,6 +42,11 @@ class MediaTypeManager
         return $this->enabled_types;
     }
 
+    public function getAllMediatypes()
+    {
+        return $this->registered_types;
+    }
+
     /**
      *
      * @param  unknown $value

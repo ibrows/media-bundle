@@ -42,7 +42,7 @@ interface MediaTypeInterface
      * @param MediaInterface $media
      * @param array          $changeSet
      */
-    public function preUpdate(MediaInterface $media, array &$changeSet);
+    public function preUpdate(MediaInterface $media, array $changeSet);
     /**
      * Called in the Doctrine postRemove event
      *

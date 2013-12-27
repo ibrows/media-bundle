@@ -56,7 +56,7 @@ abstract class AbstractMediaType implements MediaTypeInterface
         $media->setData($data);
     }
 
-    public function preUpdate(MediaInterface $media, array &$changeSet)
+    public function preUpdate(MediaInterface $media, array $changeSet)
     {
         $this->media = $media;
         $olddata = $changeSet['data'][0];
@@ -71,6 +71,7 @@ abstract class AbstractMediaType implements MediaTypeInterface
 
     public function postRemove(MediaInterface $media)
     {
+        $this->media = $media;
     }
 
     public function postUpdate(MediaInterface $media)
@@ -85,5 +86,6 @@ abstract class AbstractMediaType implements MediaTypeInterface
 
     public function postLoad(MediaInterface $media)
     {
+        $this->media = $media;
     }
 }

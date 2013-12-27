@@ -212,6 +212,7 @@ abstract class AbstractUploadedType extends AbstractMediaType
      */
     public function postRemove(MediaInterface $media)
     {
+        parent::postRemove($media);
         $file = $media->getData();
         $extra = $media->getExtra();
 
@@ -331,7 +332,7 @@ abstract class AbstractUploadedType extends AbstractMediaType
         return $dir.DIRECTORY_SEPARATOR.$filename;
     }
 
-    public function preUpdate(MediaInterface $media, array &$changeSet)
+    public function preUpdate(MediaInterface $media, array $changeSet)
     {
         $olddata = $changeSet['data'][0];
         $newdata = $changeSet['data'][1];
@@ -340,15 +341,38 @@ abstract class AbstractUploadedType extends AbstractMediaType
             return parent::preUpdate($media, $changeSet);
         }
 
-        $this->resetChangeSet($changeSet);
+        $this->revertLoad($media);
     }
 
-    private function resetChangeSet(array &$changeSet)
+    protected function revertLoad(MediaInterface $media)
     {
-        $olddata = $changeSet['data'][0];
-        $changeSet['data'][1] = $olddata;
+        $file = $media->getData();
+        $extra = $media->getExtra();
 
-        $oldextra = $changeSet['extra'][0];
-        $changeSet['extra'][1] = $oldextra;
+        if ($file instanceof File) {
+            $media->setData($file->getFilename());
+        }
+
+        if ($extra) {
+            $this->revertLoadExtra($extra);
+            $media->setExtra($extra);
+        }
+    }
+
+    protected function revertLoadExtra(array &$extra)
+    {
+        if (array_key_exists('files', $extra)) {
+            $this->revertLoadExtraFiles($extra['files']);
+        }
+    }
+
+    protected function revertLoadExtraFiles(array &$files)
+    {
+        foreach ($files as &$file) {
+            $data = $file['data'];
+            if ($data instanceof File) {
+                $file['data'] = $data->getFilename();
+            }
+        }
     }
 }
