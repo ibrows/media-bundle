@@ -29,6 +29,12 @@
             <argument type="service" id="ibrows_media.form.subscriber" />
         </service>
 
+        <service id="ibrows_media.twig.extension.core" class="Ibrows\MediaBundle\Twig\Extension\CoreExtension" public="false">
+            <tag name="twig.extension" />
+            <argument>%ibrows_media.template%</argument>
+            <argument type="service" id="ibrows_media.type.manager" />
+        </service>
+
         <service id="ibrows_media.type.image" class="Ibrows\MediaBundle\Type\UploadedImageType">
             <tag name="ibrows_media.type" alias="ibrows_media_uploadedimage" />
             <argument>%ibrows_media.image.max_width%</argument>

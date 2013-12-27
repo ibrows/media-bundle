@@ -55,7 +55,7 @@ class MediaTypeManager
         }
 
         foreach ($enabled as $type) {
-        	$mediaType = $this->getType($type);
+            $mediaType = $this->getType($type);
             $confidence = (int) $mediaType->supports($value);
             if ($confidence > 0) {
                 $supporting[$confidence] = $mediaType;
@@ -80,6 +80,10 @@ class MediaTypeManager
 
     public function getType($type)
     {
+        if ($type instanceof MediaTypeInterface) {
+            return $type;
+        }
+
         if (!array_key_exists($type, $this->registered_types)) {
             throw new TypeNotRegisteredException($type);
         }

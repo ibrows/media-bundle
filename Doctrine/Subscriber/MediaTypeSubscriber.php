@@ -58,7 +58,7 @@ class MediaTypeSubscriber implements EventSubscriber
     public function postUpdate(LifecycleEventArgs $args)
     {
         $media = $this->getObject($args);
-    
+
         if ($media instanceof MediaInterface) {
             $type = $this->manager->getType($media->getType());
             $type->postUpdate($media);
@@ -73,7 +73,7 @@ class MediaTypeSubscriber implements EventSubscriber
     public function postPersist(LifecycleEventArgs $args)
     {
         $media = $this->getObject($args);
-    
+
         if ($media instanceof MediaInterface) {
             $type = $this->manager->getType($media->getType());
             $type->postPersist($media);

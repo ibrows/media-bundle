@@ -72,6 +72,7 @@ class MediaTypeGuessSubscriber implements EventSubscriberInterface
             $type = $this->getBestMatchingType($value, $types);
         } catch (FileNotFoundException $e) {
             $this->addFormError($form, 'media.error.unknown');
+
             return;
         }
 

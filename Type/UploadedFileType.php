@@ -30,6 +30,9 @@ class UploadedFileType extends AbstractUploadedType
     protected function supportsMimeType(File $file)
     {
         $mime = $file->getMimeType();
+        if (empty($this->mimeTypes)) {
+            return true;
+        }
 
         return array_search($mime, $this->mimeTypes) !== false;
     }

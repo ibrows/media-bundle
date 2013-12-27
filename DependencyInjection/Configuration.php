@@ -34,6 +34,7 @@ class Configuration implements ConfigurationInterface
             ->children()
                 ->scalarNode('upload_location')->isRequired()->end()
                 ->scalarNode('upload_root')->isRequired()->end()
+                ->scalarNode('template')->defaultValue('IbrowsMediaBundle:Media:blocks.html.twig')->end()
                 ->arrayNode('enabled_types')
                     ->useAttributeAsKey('name')
                     ->prototype('scalar')

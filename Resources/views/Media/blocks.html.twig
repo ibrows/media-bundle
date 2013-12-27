@@ -1,0 +1,24 @@
+{% block youtube %}
+<div class="media youtube" data-title="{{ media.extra.title }}" data-videoid="{{ media.extra.videoid }}">
+    <iframe width="550" height="420" src="{{ media.url }}" allowfullscreen></iframe>
+</div>
+{% endblock %}
+
+{% block soundcloud %}
+<div class="media soundcloud">
+    {{ media.html|raw }}
+</div>
+{% endblock %}
+
+{% block image %}
+{% set source = params.format is defined ? media.extra[params.format] : media.url %}
+<div class="media image">
+    <img src="{{ source }}" alt="" />
+</div>
+{% endblock %}
+
+{% block file %}
+<div class="media file">
+    <a href="{{ media.url }}">{{ media.extra.originalFilename }}</a>
+</div>
+{% endblock %}
