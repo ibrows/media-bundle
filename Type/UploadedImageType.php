@@ -42,6 +42,19 @@ class UploadedImageType extends AbstractUploadedType
     }
 
     /**
+     * @param string $link
+     */
+    public function supports($file)
+    {
+        $supports = parent::supports($file);
+        if ($supports) {
+            return 2;
+        }
+
+        return $supports;
+    }
+
+    /**
      * @param  File    $file
      * @return boolean
      */
