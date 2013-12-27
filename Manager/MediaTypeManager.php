@@ -75,7 +75,7 @@ class MediaTypeManager
     {
         ksort($types);
 
-        return end($sorted);
+        return end($types);
     }
 
     public function getType($type)

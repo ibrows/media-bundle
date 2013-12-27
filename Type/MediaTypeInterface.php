@@ -22,10 +22,12 @@ interface MediaTypeInterface
     public function supports($data);
     /**
      * Called in the Form postBind event.
-     * You can use this function to validate to data provided by the form
+     * You can use this function to validate to data provided by the form. You
+     * can either return a string or a Symfony\Component\Form\FormError which
+     * will get translated using the validators transation domain.
      *
      * @param  mixed  $data the submitted form data
-     * @return string $message the validation error message
+     * @return mixed  $message the validation error
      */
     public function validate($data);
     /**
