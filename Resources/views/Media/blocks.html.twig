@@ -11,7 +11,7 @@
 {% endblock %}
 
 {% block image %}
-{% set source = params.format is defined ? media.extra[params.format] : media.url %}
+{% set source = params.format is defined ? type.getExtraFileUrl(media.extra, params.format) : media.url %}
 <div class="media image">
     <img src="{{ asset(source) }}" alt="" />
 </div>

@@ -26,8 +26,8 @@ interface MediaTypeInterface
      * can either return a string or a Symfony\Component\Form\FormError which
      * will get translated using the validators transation domain.
      *
-     * @param  mixed  $data the submitted form data
-     * @return mixed  $message the validation error
+     * @param  mixed $data the submitted form data
+     * @return mixed $message the validation error
      */
     public function validate($data);
     /**
@@ -42,7 +42,7 @@ interface MediaTypeInterface
      * @param MediaInterface $media
      * @param array          $changeSet
      */
-    public function preUpdate(MediaInterface $media, array $changeSet);
+    public function preUpdate(MediaInterface $media, array &$changeSet);
     /**
      * Called in the Doctrine postRemove event
      *

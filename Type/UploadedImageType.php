@@ -6,7 +6,6 @@ use Symfony\Component\Form\FormError;
 
 use Symfony\Component\HttpFoundation\File\Exception\FileNotFoundException;
 use Symfony\Component\HttpFoundation\File\File;
-use Ibrows\MediaBundle\Model\MediaInterface;
 
 class UploadedImageType extends AbstractUploadedType
 {
@@ -137,61 +136,6 @@ class UploadedImageType extends AbstractUploadedType
     /**
      * {@inheritdoc}
      */
-    protected function postRemoveExtra($extra)
-    {
-        if (is_array($extra)) {
-            foreach ($this->formats as $name => $format) {
-                if (array_key_exists($name, $extra)) {
-                    $file = $extra["{$name}_file"];
-                    if (file_exists($file)) {
-                        unlink($file);
-                    }
-                }
-            }
-        }
-    }
-
-    public function postLoad(MediaInterface $media)
-    {
-        parent::postLoad($media);
-
-        $extra = $media->getExtra();
-        if (is_array($extra)) {
-            foreach ($this->formats as $name => $format) {
-                if (array_key_exists($name, $extra)) {
-                    $filekey = "{$name}_file";
-                    $filename = $extra[$filekey];
-                    $path = $this->upload_location.
-                            DIRECTORY_SEPARATOR.$extra[$name];
-                    if (file_exists($path)) {
-                        $extra[$filekey] = new File($path);
-                    }
-                }
-            }
-        }
-        $media->setExtra($extra);
-    }
-
-    protected function revertLoadExtra(MediaInterface $media, $changeSet)
-    {
-        $extra = $media->getExtra();
-        if (is_array($extra)) {
-            foreach ($this->formats as $name => $format) {
-                if (array_key_exists($name, $extra)) {
-                    $filekey = "{$name}_file";
-                    $file = $extra[$filekey];
-                    if ($file instanceof File) {
-                        $extra[$filekey] = $file->getFilename();
-                    }
-                }
-            }
-        }
-        $media->setExtra($extra);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function generateExtra($file)
     {
         $extra = parent::generateExtra($file);
@@ -200,10 +144,7 @@ class UploadedImageType extends AbstractUploadedType
             $height = array_key_exists('height', $format) ? $format['height'] : null;
 
             $resizedFile = $this->resizeImage($file, $name, $width, $height);
-            $extra = array_merge($extra, array(
-                "{$name}_file" => $resizedFile->getFilename(),
-                $name => $this->getWebUrl($resizedFile)
-            ));
+            $this->addExtraFile($extra, $name, $resizedFile);
         }
 
         return $extra;
@@ -218,7 +159,7 @@ class UploadedImageType extends AbstractUploadedType
      */
     protected function resizeImage(File $file, $format, $targetwidth, $targetheight)
     {
-        $targetfilename = $this->getAbsolutePath($this->getUploadFilename($file, $format));
+        $targetfilename = tempnam(sys_get_temp_dir(), 'ibrows_media_image');
 
         $img = new \Imagick($file->getPathname());
         $height = $img->getimageheight();

@@ -2,15 +2,11 @@
 
 namespace Ibrows\MediaBundle\Type;
 
-use Symfony\Component\Templating\Asset\PackageInterface;
-
 use Ibrows\MediaBundle\Model\MediaInterface;
 
 use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\File\Exception\FileNotFoundException;
-
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 abstract class AbstractUploadedType extends AbstractMediaType
 {
@@ -34,6 +30,11 @@ abstract class AbstractUploadedType extends AbstractMediaType
         return $this;
     }
 
+    public function getUploadLocation()
+    {
+        return $this->upload_location;
+    }
+
     /**
      * @param  string                                        $prefix
      * @return \Ibrows\MediaBundle\Type\AbstractUploadedType
@@ -43,6 +44,11 @@ abstract class AbstractUploadedType extends AbstractMediaType
         $this->upload_root = $root;
 
         return $this;
+    }
+
+    public function getUploadRoot()
+    {
+        return $this->upload_root;
     }
 
     /**
@@ -86,10 +92,10 @@ abstract class AbstractUploadedType extends AbstractMediaType
      * @param  File $file
      * @return File pointing to the new location
      */
-    protected function moveToUpload(File $file)
+    protected function moveToUpload(File $file, $format = null)
     {
-        $directory = $this->getAbsolutePath();
-        $filename = $this->getUploadFilename($file);
+        $directory = $this->getAbsoluteUploadPath();
+        $filename = $this->getUploadFilename($file, $format);
         $newFile = $file->move($directory, $filename);
         $originalFilename = $file->getFilename();
         if ($file instanceof UploadedFile) {
@@ -106,22 +112,99 @@ abstract class AbstractUploadedType extends AbstractMediaType
     {
         $this->media = $media;
 
-        $data = $media->getData();
+        $file = $media->getData();
         $extra = $media->getExtra();
-        $originalFilename = '';
-        if (array_key_exists('originalFilename', $extra)) {
-            $originalFilename = $extra['originalFilename'];
-        }
 
-        $file = null;
-        $path = $this->upload_location.
-                DIRECTORY_SEPARATOR.$media->getUrl();
+        if (!$file instanceof File) {
+            $path = $this->getAbsoluteUploadPath()
+                    .DIRECTORY_SEPARATOR.$file;
 
-        if (file_exists($path) && !is_dir($path)) {
-            $file = new File($path);
+            if (file_exists($path) && !is_dir($path)) {
+                $file = new File($path);
+            }
         }
 
         $media->setData($file);
+        $this->postLoadExtra($extra);
+        $media->setExtra($extra);
+    }
+
+    protected function postLoadExtra(array &$extra)
+    {
+        if (array_key_exists('files', $extra)) {
+            $this->postLoadExtraFiles($extra['files']);
+        }
+    }
+
+    protected function postLoadExtraFiles(array &$files)
+    {
+        foreach ($files as &$file) {
+            $data = $file['data'];
+            $path = $this->getAbsoluteUploadPath($data);
+            if (file_exists($path) && !is_dir($path)) {
+                $file['data'] = new File($path);
+            }
+        }
+    }
+
+    public function addExtraFile(array &$extra, $key, File $file)
+    {
+        $file = $this->moveToUpload($file, $key);
+        if (!array_key_exists('files', $extra)) {
+            $extra['files'] = array();
+        }
+        $files = &$extra['files'];
+        $files[$key] = array(
+            'url' => $this->generateUrl($file, $extra),
+            'data' => $file->getFilename(),
+        );
+
+        return $extra;
+    }
+
+    public function removeExtraFile(array &$extra, $key)
+    {
+        $files = array();
+        if (!array_key_exists('files', $extra)) {
+            return false;
+        }
+        $files = &$extra['files'];
+        if (array_key_exists($key, $files)) {
+            $file = $files[$key]['data'];
+            unset($files[$key]);
+        }
+
+        if (file_exists($file) && !is_dir($file)) {
+            unlink($file);
+        }
+
+        return true;
+    }
+
+    public function getExtraFile(array $extra, $key)
+    {
+        if (!$extra || !array_key_exists('files', $extra)) {
+            return null;
+        }
+        $files = $extra['files'];
+        if (array_key_exists($key, $files)) {
+            return $files[$key]['data'];
+        }
+
+        return null;
+    }
+
+    public function getExtraFileUrl(array $extra, $key)
+    {
+        if (!$extra || !array_key_exists('files', $extra)) {
+            return null;
+        }
+        $files = $extra['files'];
+        if (array_key_exists($key, $files)) {
+            return $files[$key]['url'];
+        }
+
+        return null;
     }
 
     /**
@@ -133,7 +216,12 @@ abstract class AbstractUploadedType extends AbstractMediaType
         $extra = $media->getExtra();
 
         if (!$file instanceof File) {
-            $file = $this->getAbsolutePath($file);
+            $path = $this->getAbsoluteUploadPath()
+                    .DIRECTORY_SEPARATOR.$file;
+
+            if (file_exists($path) && !is_dir($path)) {
+                $file = new File($path);
+            }
         }
 
         if (file_exists($file) && !is_dir($file)) {
@@ -141,7 +229,7 @@ abstract class AbstractUploadedType extends AbstractMediaType
         }
 
         if ($extra) {
-            $this->postRemoveExtra($extra);
+            $this->postRemoveExtra($media, $extra);
         }
     }
 
@@ -151,21 +239,34 @@ abstract class AbstractUploadedType extends AbstractMediaType
      *
      * @param unknown $extra
      */
-    protected function postRemoveExtra($extra)
+    protected function postRemoveExtra(MediaInterface $media, $extra)
     {
+        if (array_key_exists('files', $extra)) {
+            $this->postRemoveExtraFiles($media, $extra['files']);
+        }
+    }
+
+    protected function postRemoveExtraFiles(MediaInterface $media, array &$files)
+    {
+        $extra = $media->getExtra();
+        foreach ($files as $key => $file) {
+            $this->removeExtraFile($extra, $key);
+        }
+        $media->setExtra($extra);
     }
 
     /**
      * @return string
      */
-    protected function getUploadPath()
+    protected function getRelativeUploadPath()
     {
-        $dir = $this->upload_root.
+        $dir = $this->getUploadRoot().
                 DIRECTORY_SEPARATOR.$this->getUploadFolder();
 
         if ($dir[0] === DIRECTORY_SEPARATOR) {
             $dir = substr($dir, 1);
         }
+
         return $dir;
     }
 
@@ -180,7 +281,16 @@ abstract class AbstractUploadedType extends AbstractMediaType
      */
     protected function getUploadFilename(File $file, $format = null)
     {
-        return uniqid(null, true);
+        $extension = $file->guessExtension();
+        if ($file instanceof UploadedFile) {
+            $extension = $file->getClientOriginalExtension();
+        }
+        $filename = uniqid();
+        if ($extension) {
+            $filename .= $filename.'.'.$extension;
+        }
+
+        return $filename;
     }
 
     /**
@@ -188,7 +298,8 @@ abstract class AbstractUploadedType extends AbstractMediaType
      */
     protected function generateUrl($file, $extra)
     {
-        return $this->getWebUrl($file);
+        return $this->getRelativeUploadPath()
+                .DIRECTORY_SEPARATOR.$file->getFilename();
     }
 
     /**
@@ -208,22 +319,10 @@ abstract class AbstractUploadedType extends AbstractMediaType
         return $extra;
     }
 
-    /**
-     * @param  File $file
-     * @return the  web url of the file
-     */
-    protected function getWebUrl(File $file)
+    protected function getAbsoluteUploadPath($filename = null)
     {
-        $root = $this->getUploadPath();
-        $url = $root.DIRECTORY_SEPARATOR.$file->getFilename();
-
-        return $url;
-    }
-
-    protected function getAbsolutePath($filename = null)
-    {
-        $dir = $this->upload_location.
-            DIRECTORY_SEPARATOR.$this->getUploadPath();
+        $dir = $this->getUploadLocation().
+            DIRECTORY_SEPARATOR.$this->getRelativeUploadPath();
 
         if (!is_dir($dir)) {
             mkdir($dir, 0777, true);
@@ -232,7 +331,7 @@ abstract class AbstractUploadedType extends AbstractMediaType
         return $dir.DIRECTORY_SEPARATOR.$filename;
     }
 
-    public function preUpdate(MediaInterface $media, array $changeSet)
+    public function preUpdate(MediaInterface $media, array &$changeSet)
     {
         $olddata = $changeSet['data'][0];
         $newdata = $changeSet['data'][1];
@@ -241,22 +340,15 @@ abstract class AbstractUploadedType extends AbstractMediaType
             return parent::preUpdate($media, $changeSet);
         }
 
-        $this->revertLoadData($media, $changeSet);
-        $this->revertLoadExtra($media, $changeSet);
+        $this->resetChangeSet($changeSet);
     }
 
-    protected function revertLoadData(MediaInterface $media, $changeSet)
+    private function resetChangeSet(array &$changeSet)
     {
         $olddata = $changeSet['data'][0];
-        $newdata = $changeSet['data'][1];
+        $changeSet['data'][1] = $olddata;
 
-        if ($newdata instanceof File) {
-            $media->setData($olddata);
-        }
-    }
-
-    protected function revertLoadExtra(MediaInterface $media, $changeSet)
-    {
-
+        $oldextra = $changeSet['extra'][0];
+        $changeSet['extra'][1] = $oldextra;
     }
 }
