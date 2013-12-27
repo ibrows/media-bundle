@@ -147,7 +147,7 @@ abstract class AbstractUploadedType extends AbstractMediaType
         }
     }
 
-    public function addExtraFile(array &$extra, $key, File $file)
+    protected function addExtraFile(array &$extra, $key, File $file)
     {
         $file = $this->moveToUpload($file, $key);
         if (!array_key_exists('files', $extra)) {
@@ -162,7 +162,7 @@ abstract class AbstractUploadedType extends AbstractMediaType
         return $extra;
     }
 
-    public function removeExtraFile(array &$extra, $key)
+    protected function removeExtraFile(array &$extra, $key)
     {
         $files = array();
         if (!array_key_exists('files', $extra)) {
@@ -181,8 +181,9 @@ abstract class AbstractUploadedType extends AbstractMediaType
         return true;
     }
 
-    public function getExtraFile(array $extra, $key)
+    public function getExtraFile(MediaInterface $media, $key)
     {
+        $extra = $media->getExtra();
         if (!$extra || !array_key_exists('files', $extra)) {
             return null;
         }
@@ -194,8 +195,9 @@ abstract class AbstractUploadedType extends AbstractMediaType
         return null;
     }
 
-    public function getExtraFileUrl(array $extra, $key)
+    public function getExtraFileUrl(MediaInterface $media, $key)
     {
+        $extra = $media->getExtra();
         if (!$extra || !array_key_exists('files', $extra)) {
             return null;
         }
