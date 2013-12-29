@@ -11,10 +11,16 @@ use Symfony\Component\HttpFoundation\File\Exception\FileNotFoundException;
 abstract class AbstractUploadedType extends AbstractMediaType
 {
     /**
+     * The absolute path to the root location where all the files
+     * will be moved to after upload.
+     *
      * @var string
      */
     protected $upload_location;
     /**
+     * The directory which will be used additionally to the upload
+     * location
+     *
      * @var string
      */
     protected $upload_root;
@@ -30,6 +36,9 @@ abstract class AbstractUploadedType extends AbstractMediaType
         return $this;
     }
 
+    /**
+     * @return string
+     */
     public function getUploadLocation()
     {
         return $this->upload_location;
@@ -46,13 +55,16 @@ abstract class AbstractUploadedType extends AbstractMediaType
         return $this;
     }
 
+    /**
+     * @return string
+     */
     public function getUploadRoot()
     {
         return $this->upload_root;
     }
 
     /**
-     * @param string $link
+     * {@inheritdoc}
      */
     public function supports($file)
     {
@@ -147,6 +159,15 @@ abstract class AbstractUploadedType extends AbstractMediaType
         }
     }
 
+    /**
+     * Confinience method which allows easy adding of additional
+     * files.
+     *
+     * @param  array  $extra
+     * @param  string $key   which represents the file
+     * @param  File   $file  wich will be added
+     * @return array  $extra containing the additional file
+     */
     protected function addExtraFile(array &$extra, $key, File $file)
     {
         $file = $this->moveToUpload($file, $key);
@@ -162,6 +183,13 @@ abstract class AbstractUploadedType extends AbstractMediaType
         return $extra;
     }
 
+    /**
+     * Remove a previeously added file.
+     *
+     * @param  array   $extra
+     * @param  string  $key
+     * @return boolean whether or not the file existed and was removed
+     */
     protected function removeExtraFile(array &$extra, $key)
     {
         $files = array();
@@ -181,6 +209,13 @@ abstract class AbstractUploadedType extends AbstractMediaType
         return true;
     }
 
+    /**
+     * Returns the previously added file if it exists, null otherwise.
+     *
+     * @param  MediaInterface $media
+     * @param  string         $key
+     * @return File|null
+     */
     public function getExtraFile(MediaInterface $media, $key)
     {
         $extra = $media->getExtra();
@@ -195,6 +230,14 @@ abstract class AbstractUploadedType extends AbstractMediaType
         return null;
     }
 
+    /**
+     * Get the url from the added File. The url was generated using
+     * the generateUrl method.
+     *
+     * @param  MediaInterface $media
+     * @param  string         $key
+     * @return string|null
+     */
     public function getExtraFileUrl(MediaInterface $media, $key)
     {
         $extra = $media->getExtra();
@@ -334,6 +377,9 @@ abstract class AbstractUploadedType extends AbstractMediaType
         return $dir.DIRECTORY_SEPARATOR.$filename;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function preUpdate(MediaInterface $media, array $changeSet)
     {
         $olddata = $changeSet['data'][0];

@@ -16,31 +16,69 @@ abstract class AbstractMediaType implements MediaTypeInterface
         return null;
     }
 
+    /**
+     * Hook to allow transformation of form submitted data before
+     * the available generater methods will be called.
+     *
+     * @param  mixed $data
+     * @return mixed
+     */
     protected function preTransformData($data)
     {
         return $data;
     }
 
+    /**
+     * Hook to allow transformation of form submitted data after
+     * the available generater methods will be called.
+     *
+     * @param  mixed $data
+     * @return mixed
+     */
     protected function postTransformData($data)
     {
         return $data;
     }
 
+    /**
+     * Allows you to generate an arry of additional information
+     * to be stored.
+     *
+     * @param  mixed      $data
+     * @return array|null
+     */
     protected function generateExtra($data)
     {
         return null;
     }
 
+    /**
+     * Allows you to generate the url to be stored.
+     *
+     * @param  mixed       $data
+     * @param  array       $extra
+     * @return string|null
+     */
     protected function generateUrl($data, $extra)
     {
         return null;
     }
 
+    /**
+     * Allows you to generate the html to be stored.
+     *
+     * @param  mixed       $data
+     * @param  array       $extra
+     * @return string|null
+     */
     protected function generateHtml($data, $extra)
     {
         return null;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function prePersist(MediaInterface $media)
     {
         $this->media = $media;
@@ -56,6 +94,9 @@ abstract class AbstractMediaType implements MediaTypeInterface
         $media->setData($data);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function preUpdate(MediaInterface $media, array $changeSet)
     {
         $this->media = $media;
@@ -69,6 +110,9 @@ abstract class AbstractMediaType implements MediaTypeInterface
         $this->prePersist($media);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function postRemove(MediaInterface $media)
     {
         $this->media = $media;
@@ -79,11 +123,17 @@ abstract class AbstractMediaType implements MediaTypeInterface
         return $this->postLoad($media);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function postPersist(MediaInterface $media)
     {
         return $this->postLoad($media);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function postLoad(MediaInterface $media)
     {
         $this->media = $media;

@@ -12,9 +12,7 @@ interface MediaTypeInterface
      * to find all supporting types for the given data.
      *
      * The returned value represents the confidence in supporting the data.
-     * The higher the returned integer, the better the confidence. All
-     * internal types return confidence of boolean true, which evaluates to
-     * integer 1.
+     * The higher the returned integer, the better the confidence.
      *
      * @param  mixed           $data the submitted form data
      * @return boolean|integer the confidence

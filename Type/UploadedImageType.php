@@ -41,7 +41,7 @@ class UploadedImageType extends AbstractUploadedType
     }
 
     /**
-     * @param string $link
+     * {@inheritdoc}
      */
     public function supports($file)
     {
