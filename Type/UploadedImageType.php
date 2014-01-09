@@ -3,9 +3,10 @@
 namespace Ibrows\MediaBundle\Type;
 
 use Symfony\Component\Form\FormError;
-
 use Symfony\Component\HttpFoundation\File\Exception\FileNotFoundException;
 use Symfony\Component\HttpFoundation\File\File;
+use Imagick;
+use ImagickPixel;
 
 class UploadedImageType extends AbstractUploadedType
 {
@@ -30,9 +31,16 @@ class UploadedImageType extends AbstractUploadedType
      */
     protected $mimeTypes;
 
+    /**
+     * @param $max_width
+     * @param $max_height
+     * @param $max_size
+     * @param array $mime_types
+     * @param array $formats
+     */
     public function __construct($max_width, $max_height, $max_size, array $mime_types, array $formats)
     {
-        $this->maxWidth =  $max_width;
+        $this->maxWidth = $max_width;
         $this->maxHeight = $max_height;
         $this->maxSize = $max_size;
 
@@ -41,7 +49,8 @@ class UploadedImageType extends AbstractUploadedType
     }
 
     /**
-     * {@inheritdoc}
+     * @param mixed $file
+     * @return bool|int
      */
     public function supports($file)
     {
@@ -54,8 +63,9 @@ class UploadedImageType extends AbstractUploadedType
     }
 
     /**
-     * @param  File    $file
-     * @return boolean
+     * @param File $file
+     * @return bool
+     * @throws \Exception
      */
     protected function supportsMimeType(File $file)
     {
@@ -70,7 +80,8 @@ class UploadedImageType extends AbstractUploadedType
     }
 
     /**
-     * {@inheritdoc}
+     * @param mixed $file
+     * @return null|FormError
      */
     public function validate($file)
     {
@@ -87,9 +98,8 @@ class UploadedImageType extends AbstractUploadedType
     }
 
     /**
-     *
-     * @param  File        $file
-     * @return void|string
+     * @param File $file
+     * @return FormError
      */
     protected function validateFileSize(File $file)
     {
@@ -106,9 +116,8 @@ class UploadedImageType extends AbstractUploadedType
     }
 
     /**
-     *
-     * @param  File        $file
-     * @return void|string
+     * @param File $file
+     * @return FormError
      */
     protected function validateImgSize(File $file)
     {
@@ -116,7 +125,7 @@ class UploadedImageType extends AbstractUploadedType
             return;
         }
 
-        $img = new \Imagick($file->getPathname());
+        $img = new Imagick($file->getPathname());
         $height = $img->getimageheight();
         $width = $img->getimagewidth();
 
@@ -134,7 +143,8 @@ class UploadedImageType extends AbstractUploadedType
     }
 
     /**
-     * {@inheritdoc}
+     * @param mixed $file
+     * @return array|null
      */
     public function generateExtra($file)
     {
@@ -151,20 +161,21 @@ class UploadedImageType extends AbstractUploadedType
     }
 
     /**
-     * @param \Symfony\Component\HttpFoundation\File\File $file
-     * @param number|null                                 $targetwidth
-     * @param number|null                                 $targetheight
-     *
-     * @return \Symfony\Component\HttpFoundation\File\File
+     * @param File $file
+     * @param $format
+     * @param $targetwidth
+     * @param $targetheight
+     * @return File
      */
     protected function resizeImage(File $file, $format, $targetwidth, $targetheight)
     {
         $targetfilename = tempnam(sys_get_temp_dir(), 'ibrows_media_image');
 
-        $img = new \Imagick($file->getPathname());
+        $img = new Imagick($file->getPathname());
+
         $height = $img->getimageheight();
         $width = $img->getimagewidth();
-        $factor = $height/$width;
+        $factor = $height / $width;
         if (!$targetheight) {
             $targetheight = intval($targetwidth * $factor);
         }
@@ -172,12 +183,51 @@ class UploadedImageType extends AbstractUploadedType
             $targetwidth = intval($targetheight / $factor);
         }
 
+        $img = $this->processOrientation($img);
         $img->cropthumbnailimage($targetwidth, $targetheight);
         $img->writeimage($targetfilename);
 
         return new File($targetfilename);
     }
 
+    /**
+     * @param Imagick $img
+     * @return Imagick
+     */
+    public function processOrientation(Imagick $img)
+    {
+        $orientation = $img->getimageorientation();
+        if ($orientation == Imagick::ORIENTATION_UNDEFINED) {
+            return $img;
+        }
+
+        $flippedOrientations = array(
+            Imagick::ORIENTATION_TOPRIGHT,
+            Imagick::ORIENTATION_BOTTOMLEFT,
+            Imagick::ORIENTATION_LEFTTOP,
+            Imagick::ORIENTATION_RIGHTBOTTOM,
+        );
+
+        if (in_array($orientation, array(Imagick::ORIENTATION_BOTTOMLEFT, Imagick::ORIENTATION_BOTTOMRIGHT))) {
+            $img->rotateimage(new ImagickPixel(), 180);
+        }
+        if (in_array($orientation, array(\Imagick::ORIENTATION_LEFTBOTTOM, Imagick::ORIENTATION_LEFTTOP))) {
+            $img->rotateimage(new ImagickPixel(), -90);
+        }
+        if (in_array($orientation, array(\Imagick::ORIENTATION_RIGHTBOTTOM, Imagick::ORIENTATION_RIGHTTOP))) {
+            $img->rotateimage(new ImagickPixel(), 90);
+        }
+        if (in_array($orientation, $flippedOrientations)) {
+            $img->flipimage();
+        }
+        $img->setimageorientation(Imagick::ORIENTATION_UNDEFINED);
+
+        return $img;
+    }
+
+    /**
+     * @return string
+     */
     public function getName()
     {
         return 'image';
