@@ -131,8 +131,11 @@ abstract class AbstractUploadedType extends AbstractMediaType
             $path = $this->getAbsoluteUploadPath()
                     .DIRECTORY_SEPARATOR.$file;
 
-            if (file_exists($path) && !is_dir($path)) {
+            if (file_exists($path) && !is_dir($path))
+            {
                 $file = new File($path);
+            } else {
+                return null;
             }
         }
 
