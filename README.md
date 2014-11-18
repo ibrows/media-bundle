@@ -9,7 +9,7 @@ You can expect the following features of this bundle:
  * Image uploads with custom formats (generated during upload)
  * Easy extension with custom media types
  * Different media types depending on the user input (e.g. youtube, soundcloud link using the same form and entity)
- 
+
 If you want a more feature rich solution with admin management intagration, take a look at the [SonataMediaBundle](https://github.com/sonata-project/SonataMediaBundle).
 
 ## Installation
@@ -51,6 +51,7 @@ public function registerBundles()
 ## Configuration
 
 ### Entity
+
 ```
 use Ibrows\MediaBundle\Model\Media as AbstractMedia;
 use Doctrine\ORM\Mapping as ORM;
@@ -71,7 +72,7 @@ class Media extends AbstractMedia
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
     protected $id;
-    
+
     /**
      * @return integer
      */
@@ -86,6 +87,7 @@ Now you can add the Media entity as a relation anywhere you want.
 
 
 ### Options
+
 ```
 ibrows_media:
     template: "IbrowsMediaBundle:Media:blocks.html.twig"
@@ -98,7 +100,7 @@ ibrows_media:
         max_size: ~
         max_width: 1024
         max_height: ~
-        
+
         mime_types: [image/jpeg, image/png]
         formats:
             small:
@@ -113,7 +115,7 @@ ibrows_media:
 
     file:
         max_size: ~
-        mime_types: ~ 
+        mime_types: ~
 ```
 The sizes are in Kb and the width and height values are in pixels.
 
@@ -128,11 +130,12 @@ There are two available form types:
  * ibrows_media_link: offers a text field where you can submit a link (e.g. youtube link, soundcloud link)
  * ibrows_media_upload: offers a file field in order to upload a file
 
-Each form definition needs the "data_class" attribute set in order to know which entity it should use to persist. 
+Each form definition needs the "data_class" attribute set in order to know which entity it should use to persist.
 The entity given should implement the MediaInterface.
 Additionally there is a "type" option where you can define the supported types either as an array or a single string.
 
 Below is an example usage of the different form types.
+
 ```
 <?php
 
@@ -327,7 +330,7 @@ Then the pdf media type will be used whenever it supports the submitted data.
 class PdfType extends UploadedFileType
 {
     // ------
-    
+
     /**
      * {@inheritdoc}
      */
@@ -340,7 +343,7 @@ class PdfType extends UploadedFileType
 
         return $supports;
     }
-    
+
     // ------
 }
 ```
