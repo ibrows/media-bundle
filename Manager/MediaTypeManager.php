@@ -4,6 +4,7 @@ namespace Ibrows\MediaBundle\Manager;
 
 use Ibrows\MediaBundle\Exception\TypeAlreadyRegisteredException;
 
+use Ibrows\MediaBundle\Type\AbstractMediaType;
 use Ibrows\MediaBundle\Type\MediaTypeInterface;
 use Ibrows\MediaBundle\Exception\TypeNotRegisteredException;
 
@@ -49,7 +50,7 @@ class MediaTypeManager
 
     /**
      *
-     * @param  unknown $value
+     * @param  mixed $value
      * @return array
      */
     public function getSupportingTypes($value, array $enabled = array())
@@ -72,7 +73,7 @@ class MediaTypeManager
 
     /**
      *
-     * @param  unknown           $value
+     * @param  mixed           $value
      * @param  array             $types
      * @return AbstractMediaType
      */

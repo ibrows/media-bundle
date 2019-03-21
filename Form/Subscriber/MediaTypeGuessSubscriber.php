@@ -7,6 +7,7 @@ use Ibrows\MediaBundle\Exception\MissingDataClassException;
 use Ibrows\MediaBundle\Manager\MediaTypeManager;
 
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Symfony\Component\Form\FormInterface;
 use Symfony\Component\Translation\TranslatorInterface;
 use Symfony\Component\Form\FormEvents;
 use Symfony\Component\Form\FormEvent;
@@ -96,7 +97,7 @@ class MediaTypeGuessSubscriber implements EventSubscriberInterface
         return $type;
     }
 
-    protected function addFormError($form, $message)
+    protected function addFormError(FormInterface $form, $message)
     {
         if ($message instanceof FormError) {
             if (!$message->getMessage()) {
