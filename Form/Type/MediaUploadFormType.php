@@ -2,7 +2,7 @@
 
 namespace Ibrows\MediaBundle\Form\Type;
 
-use Symfony\Component\OptionsResolver\OptionsResolverInterface;
+use Symfony\Component\OptionsResolver\OptionsResolver;
 
 use Symfony\Component\Form\FormBuilderInterface;
 
@@ -30,7 +30,7 @@ class MediaUploadFormType extends AbstractMediaType
         $builder->addEventSubscriber($this->subscriber);
     }
 
-    public function setDefaultOptions(OptionsResolverInterface $resolver)
+    public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults(array(
             'type' => null,

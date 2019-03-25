@@ -2,6 +2,7 @@
 
 namespace Ibrows\MediaBundle\Doctrine\Subscriber;
 
+use Doctrine\Common\EventArgs;
 use Doctrine\Common\EventSubscriber;
 use Doctrine\ORM\Event\LifecycleEventArgs;
 use Doctrine\ORM\Event\PreUpdateEventArgs;
@@ -88,7 +89,6 @@ class MediaTypeSubscriber implements EventSubscriber
     public function prePersist(LifecycleEventArgs $args)
     {
         $media = $this->getObject($args);
-        $em = $args->getEntityManager();
 
         if ($media instanceof MediaInterface) {
             $type = $this->manager->getType($media->getType());

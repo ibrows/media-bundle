@@ -120,7 +120,7 @@ abstract class AbstractMediaType implements MediaTypeInterface
 
     public function postUpdate(MediaInterface $media)
     {
-        return $this->postLoad($media);
+        $this->postLoad($media);
     }
 
     /**
@@ -128,7 +128,7 @@ abstract class AbstractMediaType implements MediaTypeInterface
      */
     public function postPersist(MediaInterface $media)
     {
-        return $this->postLoad($media);
+        $this->postLoad($media);
     }
 
     /**

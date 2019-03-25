@@ -286,7 +286,7 @@ abstract class AbstractUploadedType extends AbstractMediaType
      * Overwrite this method in order to clean up the additional
      * data created in generateExtra
      *
-     * @param unknown $extra
+     * @param mixed $extra
      */
     protected function postRemoveExtra(MediaInterface $media, $extra)
     {
@@ -385,11 +385,11 @@ abstract class AbstractUploadedType extends AbstractMediaType
      */
     public function preUpdate(MediaInterface $media, array $changeSet)
     {
-        $olddata = $changeSet['data'][0];
         $newdata = $changeSet['data'][1];
 
         if ($newdata instanceof UploadedFile) {
-            return parent::preUpdate($media, $changeSet);
+            parent::preUpdate($media, $changeSet);
+            return;
         }
 
         $this->revertLoad($media);
